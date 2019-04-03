@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     final int ACTIVITY_SELECT_PICTURE = 1;
     final int ACTIVITY_RESULT = 2;
 
-    private camera2 mCamera;
+    private Camera mCamera;
     private TextureView mTextureView;
 
 
