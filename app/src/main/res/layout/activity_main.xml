@@ -6,13 +6,6 @@
     android:layout_gravity="center"
     android:gravity="center">
 
-    <SurfaceView
-        android:layout_width="240dp"
-        android:layout_height="320dp"
-        android:id="@+id/surface_view"
-        android:visibility="visible"
-        />
-
 
 
 

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Environment;
@@ -14,6 +15,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.TextureView;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -35,93 +37,54 @@ import org.w3c.dom.Text;
 
 import java.io.IOException;
 
-public class MainActivity extends AppCompatActivity implements SurfaceHolder.Callback {
+public class MainActivity extends AppCompatActivity implements TextureView.SurfaceTextureListener {
 
     final int ACTIVITY_SELECT_PICTURE = 1;
     final int ACTIVITY_RESULT = 2;
-    /*
-    //For camera surface
-    private String cameraFileName;
-    private static final boolean SAVE_TO_FILE = true;
-    private SurfaceView cameraPreview;
-    private SurfaceHolder surfaceHolder;
-    private Camera camera;
-    private ImageView currentPhoto;
-    private byte[] dataa;
-*/
+
+    private camera2 mCamera;
+    private TextureView mTextureView;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //goToGallery();
-        //Let us prepare the surface view
+        //Let us prepare the Texture View
+        mTextureView = new TextureView(this);
+        mTextureView.setSurfaceTextureListener(this);
 
-        /*cameraPreview = findViewById(R.id.surface_view);
-        surfaceHolder = cameraPreview.getHolder();
-        surfaceHolder.addCallback(this);
-        openCamera(); */
+        setContentView(mTextureView);
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        camera.release();
-    }
+    public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+        mCamera = Camera.open();
+        mCamera.setDisplayOrientation(270);
 
-    private void openCamera() {
-
-        if ((camera = Camera.open(0)) == null) {
-            Toast.makeText(getApplicationContext(), "Camera not available!",
-                    Toast.LENGTH_LONG).show();
-        } else {
-
-//----This will make the surface be created
-            cameraPreview.setVisibility(View.VISIBLE);
-        }
-    }
-
-    public void surfaceCreated(SurfaceHolder holder) {
         try {
-            camera.setPreviewDisplay(holder);
-//----This will make the surface be changed
-            camera.startPreview();
-        } catch (Exception e) {
-            //----Do something
+            mCamera.setPreviewTexture(surface);
+            mCamera.startPreview();
+        } catch (IOException ioe) {
+            // Something bad happened
         }
     }
 
-    public void surfaceChanged(SurfaceHolder holder, int format, int width,
-                               int height) {
-
-        Camera.Parameters cameraParameters;
-        boolean sizeFound;
-
-        camera.stopPreview();
-        sizeFound = false;
-        cameraParameters = camera.getParameters();
-        for (Camera.Size size : cameraParameters.getSupportedPreviewSizes()) {
-            if (size.width == width || size.height == height) {
-                width = size.width;
-                height = size.height;
-                sizeFound = true;
-                break;
-            }
-        }
-        if (sizeFound) {
-            cameraParameters.setPreviewSize(width, height);
-            camera.setParameters(cameraParameters);
-        } else {
-            Toast.makeText(getApplicationContext(),
-                    "Camera cannot do " + width + "x" + height, Toast.LENGTH_LONG).show();
-
-        }
-        camera.startPreview();
-
+    public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+        // Ignored, Camera does all the work for us
     }
-    public void surfaceDestroyed(SurfaceHolder holder) {
 
+    public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+        mCamera.stopPreview();
+        mCamera.release();
+        return true;
     }
+
+    public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+        // Invoked every time there's a new Camera preview frame
+    }
+
+
 
     private void goToGallery() {
         Intent galleryIntent;
