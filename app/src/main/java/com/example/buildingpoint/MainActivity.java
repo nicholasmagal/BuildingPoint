@@ -45,6 +45,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import android.os.AsyncTask;
+
 public class MainActivity extends AppCompatActivity implements TextureView.SurfaceTextureListener,Camera.PreviewCallback{
 
     final int ACTIVITY_SELECT_PICTURE = 1;
