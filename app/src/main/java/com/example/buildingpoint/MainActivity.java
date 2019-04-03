@@ -3,8 +3,11 @@ package com.example.buildingpoint;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
+import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Environment;
@@ -35,9 +38,10 @@ import com.google.firebase.ml.custom.FirebaseModelOutputs;
 
 import org.w3c.dom.Text;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public class MainActivity extends AppCompatActivity implements TextureView.SurfaceTextureListener {
+public class MainActivity extends AppCompatActivity implements TextureView.SurfaceTextureListener,Camera.PreviewCallback{
 
     final int ACTIVITY_SELECT_PICTURE = 1;
     final int ACTIVITY_RESULT = 2;
@@ -56,10 +60,12 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         mTextureView.setSurfaceTextureListener(this);
 
         setContentView(mTextureView);
+        mCamera = Camera.open();
+        mCamera.setPreviewCallback(this);
     }
 
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-        mCamera = Camera.open();
+
         mCamera.setDisplayOrientation(270);
 
         try {
@@ -84,7 +90,30 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         // Invoked every time there's a new Camera preview frame
     }
 
+    @Override
+    public void onPreviewFrame(byte[] data, Camera camera) {
+        Log.i("Camera","kkhhjh ");
 
+        Camera.Parameters parameters = camera.getParameters();
+        int width = parameters.getPreviewSize().width;
+        int height = parameters.getPreviewSize().height;
+
+        YuvImage yuv = new YuvImage(data, parameters.getPreviewFormat(), width, height, null);
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        yuv.compressToJpeg(new Rect(0, 0, width, height), 50, out);
+
+        byte[] bytes = out.toByteArray();
+        final Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+
+        MainActivity.this.runOnUiThread(new Runnable() {
+
+            @Override
+            public void run() {
+                //Connect the firebase model here
+            }
+        });
+    }
 
     private void goToGallery() {
         Intent galleryIntent;
