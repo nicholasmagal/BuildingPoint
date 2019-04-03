@@ -54,7 +54,7 @@ public class ResultPage extends AppCompatActivity {
 
         pictureMap = MediaStore.Images.Media.getBitmap(
                 this.getContentResolver(), uriFromString);
-        pictureZone.setImageBitmap(pictureMap);
+        //pictureZone.setImageBitmap(pictureMap);
 
         return pictureMap;
     }
