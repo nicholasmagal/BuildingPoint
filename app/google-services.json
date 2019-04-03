@@ -1,0 +1,35 @@
+{
+  "project_info": {
+    "project_number": "982276532253",
+    "firebase_url": "https://buildingpoint-13abf.firebaseio.com",
+    "project_id": "buildingpoint-13abf",
+    "storage_bucket": "buildingpoint-13abf.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:982276532253:android:9dffad1dc5432a3d",
+        "android_client_info": {
+          "package_name": "com.example.buildingpoint"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD2ZPKq_9gftMRF2pca9umLjw4JgaA3CMU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "982276532253-rgbtsd7fqdu9nkjovco45a5p372673eq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
