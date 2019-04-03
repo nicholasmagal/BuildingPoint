@@ -116,8 +116,9 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
             @Override
             public void run() {
-                //Connect the firebase model here
+
                 try{
+                    Thread.sleep(2000);
                     getTFModel(bitmap);
                 }
                 catch (Exception e){
