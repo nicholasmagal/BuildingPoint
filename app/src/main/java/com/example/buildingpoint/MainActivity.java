@@ -15,6 +15,7 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Html;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -24,6 +25,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.util.ArrayUtils;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.ml.common.FirebaseMLException;
@@ -44,10 +46,12 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
+import java.util.List;
 
 import android.os.AsyncTask;
 
-public class MainActivity extends AppCompatActivity implements TextureView.SurfaceTextureListener,Camera.PictureCallback {
+public class MainActivity extends AppCompatActivity implements TextureView.SurfaceTextureListener, Camera.PictureCallback {
 
     final int ACTIVITY_SELECT_PICTURE = 1;
     final int ACTIVITY_RESULT = 2;
@@ -59,22 +63,16 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     static final int REQUEST_IMAGE_CAPTURE = 1;
 
 
-
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        cameraInUse=false;
-        canTakePhoto=true;
+        cameraInUse = false;
+        canTakePhoto = true;
         //goToGallery();
         //Let us prepare the Texture View
         mTextureView = new TextureView(this);
         mTextureView.setSurfaceTextureListener(this);
-
-
-
         setContentView(mTextureView);
         openCamera();
 
@@ -82,26 +80,30 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             @Override
             public void onClick(View view) {
                 Log.i("Tap", "U r clicking");
-                if (canTakePhoto){
-                    mCamera.takePicture(null,null, null,MainActivity.this);
-                    canTakePhoto=false;
+                if (canTakePhoto) {
+                    mCamera.takePicture(null, null, null, MainActivity.this);
+                    canTakePhoto = false;
                 }
             }
         });
 
     }
 
+    protected void CAB(){
+        //Set the logo
+        //getActionBar().setLogo();
+    }
+
     @Override
     public void onPictureTaken(byte[] data, Camera camera) {
         Bitmap myPhoto;
-        myPhoto = BitmapFactory.decodeByteArray(data,0,data.length);
+        myPhoto = BitmapFactory.decodeByteArray(data, 0, data.length);
         mCamera.startPreview();
-        try{
+        try {
             getTFModel(myPhoto);
-            canTakePhoto=true;
-        }
-        catch (Exception e){
-            Log.i("FireBaseFail","Failed");
+            canTakePhoto = true;
+        } catch (Exception e) {
+            Log.i("FireBaseFail", "Failed");
         }
 
     }
@@ -157,7 +159,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     @Override
     protected void onStop() {
         super.onStop();
-        if (cameraInUse){
+        if (cameraInUse) {
             closeCamera();
         }
     }
@@ -165,10 +167,10 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     private void openCamera() {
 
         if ((mCamera = Camera.open(0)) == null) {
-            Toast.makeText(getApplicationContext(),"Camera not available!",
+            Toast.makeText(getApplicationContext(), "Camera not available!",
                     Toast.LENGTH_LONG).show();
         }
-        cameraInUse=true;
+        cameraInUse = true;
     }
 
     private void closeCamera() {
@@ -289,6 +291,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                                         String label = reader.readLine();
 
                                         Log.i("MLKit", String.format("%s: %1.4f", labels[i], probabilities[i]));
+
                                     } catch (Exception e) {
                                         Log.i("MLKIT", "FAIL");
                                     }
@@ -307,6 +310,14 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         Log.i("SUCCESS", "3");
 
 
+    }
+
+    private String prediction(float[] probabilities){
+        int max=0;
+       int lenght=probabilities.length;
+       for (int i=0; i<lenght;i++){
+           
+       }
     }
 
     private void goToGallery() {
