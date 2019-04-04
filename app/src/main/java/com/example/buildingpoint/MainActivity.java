@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
     }
 
-    protected void CAB(){
+    protected void CAB() {
         //Set the logo
         //getActionBar().setLogo();
     }
@@ -99,12 +99,15 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         Bitmap myPhoto;
         myPhoto = BitmapFactory.decodeByteArray(data, 0, data.length);
         mCamera.startPreview();
+
         try {
+
             getTFModel(myPhoto);
             canTakePhoto = true;
         } catch (Exception e) {
             Log.i("FireBaseFail", "Failed");
         }
+
 
     }
 
@@ -290,13 +293,22 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                                                 new InputStreamReader(getAssets().open("train.txt")));
                                         String label = reader.readLine();
 
+
                                         Log.i("MLKit", String.format("%s: %1.4f", labels[i], probabilities[i]));
+
 
                                     } catch (Exception e) {
                                         Log.i("MLKIT", "FAIL");
                                     }
+                                    String resultForDisplay=predictionProb(probabilities,labels);
+                                    Toast.makeText(getApplicationContext(), resultForDisplay, Toast.LENGTH_SHORT).show();
+
+
 
                                 }
+
+
+
 
                             }
                         })
@@ -312,12 +324,18 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
     }
 
-    private String prediction(float[] probabilities){
-        int max=0;
-       int lenght=probabilities.length;
-       for (int i=0; i<lenght;i++){
-           
-       }
+    private String predictionProb(float[] probabilities,String[] labels) {
+        float max = 0;
+        int index = 100;
+        int lenght = probabilities.length;
+        for (int i = 0; i < lenght; i++) {
+            if (probabilities[i] > max) {
+                max = probabilities[i];
+                index=i;
+            }
+        }
+        String resultForAndriod=String.format("%s: %1.4f",labels[index] ,max);
+        return resultForAndriod;
     }
 
     private void goToGallery() {
