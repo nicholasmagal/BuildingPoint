@@ -89,10 +89,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
     }
 
-    protected void CAB() {
-        //Set the logo
-        //getActionBar().setLogo();
-    }
+
 
     @Override
     public void onPictureTaken(byte[] data, Camera camera) {
