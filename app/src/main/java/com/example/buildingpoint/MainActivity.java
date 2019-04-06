@@ -114,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         camera.setDisplayOrientation(result);
     }
 
-    
+
 
     @Override
     public void onPictureTaken(byte[] data, Camera camera) {
