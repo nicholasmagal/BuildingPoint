@@ -1,7 +1,9 @@
 package com.example.buildingpoint;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -69,8 +71,9 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         cameraInUse = false;
-        canTakePhoto = true;
-        openCamera();
+        canTakePhoto = false;
+        checkPermission();
+        //openCamera();
         //goToGallery();
         //Let us prepare the Texture View
         mTextureView = new TextureView(this);
@@ -88,6 +91,29 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             }
         });
 
+    }
+
+    private void checkPermission() {
+        if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            canTakePhoto = true;
+            openCamera();
+
+        }
+
+        else {
+            /*
+            if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
+
+                Toast.makeText(this, "Camera permission is needed to show the camera preview.", Toast.LENGTH_SHORT).show();
+            }
+            */
+            requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_IMAGE_CAPTURE);
+
+
+            checkPermission();
+
+
+        }
     }
 
     public static int getId(){
