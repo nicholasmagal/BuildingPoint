@@ -70,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         setContentView(R.layout.activity_main);
         cameraInUse = false;
         canTakePhoto = true;
+        openCamera();
         //goToGallery();
         //Let us prepare the Texture View
         mTextureView = new TextureView(this);
@@ -87,6 +88,21 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             }
         });
 
+    }
+
+    public static int getId(){
+        int cameraId = -1;
+        int numberOfCameras = Camera.getNumberOfCameras();
+        for (int i = 0; i < numberOfCameras; i++) {
+            Camera.CameraInfo info = new Camera.CameraInfo();
+            Camera.getCameraInfo(i, info);
+            if (info.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
+                Log.d("ID", "Camera found");
+                cameraId = i;
+                break;
+            }
+        }
+        return  cameraId;
     }
 
     public static void setCameraDisplayOrientation(Activity activity,
@@ -135,7 +151,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
 
-        mCamera.setDisplayOrientation(270);
 
         try {
             mCamera.setPreviewTexture(surface);
@@ -190,12 +205,13 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     }
 
     private void openCamera() {
-
-        if ((mCamera = Camera.open(0)) == null) {
+        int cameraID=getId();
+        if ((mCamera = Camera.open(cameraID)) == null) {
             Toast.makeText(getApplicationContext(), "Camera not available!",
                     Toast.LENGTH_LONG).show();
         }
-        setCameraDisplayOrientation(this,0,mCamera);
+
+        setCameraDisplayOrientation(this,cameraID,mCamera);
         cameraInUse = true;
     }
 
