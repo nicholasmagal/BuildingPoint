@@ -29,8 +29,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.util.ArrayUtils;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.ml.common.FirebaseMLException;
 import com.google.firebase.ml.common.modeldownload.FirebaseLocalModel;
 import com.google.firebase.ml.common.modeldownload.FirebaseModelDownloadConditions;
@@ -64,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     private boolean cameraInUse;
     private boolean canTakePhoto;
     static final int REQUEST_IMAGE_CAPTURE = 1;
+
 
 
     @Override
@@ -165,7 +171,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         mCamera.startPreview();
 
         try {
-
             getTFModel(myPhoto);
             canTakePhoto = true;
         } catch (Exception e) {
@@ -350,7 +355,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                                 Log.i("SUCCESS", "4");
                                 float[][] output = result.getOutput(0);
                                 float[] probabilities = output[0];
-                                String[] labels = {"Arts", "Cox", "Mcknighnight", "Rainbow"};
+                                String[] labels = {"Arts", "Cox", "McKnight", "Rainbow"};
 
                                 for (int i = 0; i < probabilities.length; i++) {
                                     try {
@@ -365,12 +370,16 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                                     } catch (Exception e) {
                                         Log.i("MLKIT", "FAIL");
                                     }
-                                    String resultForDisplay=predictionProb(probabilities,labels);
-                                    Toast.makeText(getApplicationContext(), resultForDisplay, Toast.LENGTH_SHORT).show();
+                                    //String resultForDisplay=predictionProb(probabilities,labels);
+                                    //Toast.makeText(getApplicationContext(), resultForDisplay, Toast.LENGTH_SHORT).show();
+                                    getInfo(predictionProb(probabilities,labels));
 
 
 
                                 }
+
+
+
 
 
 
@@ -392,15 +401,16 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     private String predictionProb(float[] probabilities,String[] labels) {
         float max = 0;
         int index = 100;
-        int lenght = probabilities.length;
-        for (int i = 0; i < lenght; i++) {
+        int length = probabilities.length;
+        for (int i = 0; i < length; i++) {
             if (probabilities[i] > max) {
                 max = probabilities[i];
                 index=i;
             }
         }
-        String resultForAndriod=String.format("%s: %1.4f",labels[index] ,max);
-        return resultForAndriod;
+        //String resultForAndroid=String.format("%s: %1.4f",labels[index] ,max);
+        //return resultForAndroid;
+        return labels[index];
     }
 
     private void goToGallery() {
@@ -410,5 +420,24 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         startActivityForResult(galleryIntent, ACTIVITY_SELECT_PICTURE);
     }
 
+    private void getInfo(String label) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        //Task<DocumentSnapshot> tds = db.collection("buildings").document(label).get();
+        Task<DocumentSnapshot> tds = db.collection("buildings").document(label).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                DocumentSnapshot ds = task.getResult();
+                Object bName = ds.get("name");
+                Object bDepartment = ds.get("department");
+                Object bAddress = ds.get("address");
+                String resultForDisplay = bName.toString() + "\n" + bDepartment.toString() + "\n" + bAddress.toString();
+                Toast.makeText(getApplicationContext(), resultForDisplay, Toast.LENGTH_SHORT).show();
+            }
+        });
 
+
+
+
+
+    }
 }
