@@ -17,6 +17,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.TextureView;
@@ -74,7 +75,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         mTextureView = new TextureView(this);
         mTextureView.setSurfaceTextureListener(this);
         setContentView(mTextureView);
-        openCamera();
 
         mTextureView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -89,7 +89,32 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
     }
 
+    public static void setCameraDisplayOrientation(Activity activity,
+                                                   int cameraId, android.hardware.Camera camera) {
+        android.hardware.Camera.CameraInfo info =
+                new android.hardware.Camera.CameraInfo();
+        android.hardware.Camera.getCameraInfo(cameraId, info);
+        int rotation = activity.getWindowManager().getDefaultDisplay()
+                .getRotation();
+        int degrees = 0;
+        switch (rotation) {
+            case Surface.ROTATION_0: degrees = 0; break;
+            case Surface.ROTATION_90: degrees = 90; break;
+            case Surface.ROTATION_180: degrees = 180; break;
+            case Surface.ROTATION_270: degrees = 270; break;
+        }
 
+        int result;
+        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+            result = (info.orientation + degrees) % 360;
+            result = (360 - result) % 360;  // compensate the mirror
+        } else {  // back-facing
+            result = (info.orientation - degrees + 360) % 360;
+        }
+        camera.setDisplayOrientation(result);
+    }
+
+    
 
     @Override
     public void onPictureTaken(byte[] data, Camera camera) {
@@ -170,6 +195,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             Toast.makeText(getApplicationContext(), "Camera not available!",
                     Toast.LENGTH_LONG).show();
         }
+        setCameraDisplayOrientation(this,0,mCamera);
         cameraInUse = true;
     }
 
