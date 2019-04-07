@@ -379,15 +379,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                                     //Toast.makeText(getApplicationContext(), resultForDisplay, Toast.LENGTH_SHORT).show();
                                     getInfo(predictionProb(probabilities,labels));
 
-
-
                                 }
-
-
-
-
-
-
 
                             }
                         })
