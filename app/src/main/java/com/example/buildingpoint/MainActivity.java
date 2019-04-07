@@ -2,6 +2,9 @@ package com.example.buildingpoint;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -15,6 +18,7 @@ import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
@@ -79,6 +83,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         cameraInUse = false;
         canTakePhoto = false;
         checkPermission();
+        WelcomeMessage(mTextureView);
         //openCamera();
         //goToGallery();
         //Let us prepare the Texture View
@@ -434,10 +439,21 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                 Toast.makeText(getApplicationContext(), resultForDisplay, Toast.LENGTH_SHORT).show();
             }
         });
+    }
 
-
-
-
-
+    public void WelcomeMessage(View view){
+        String welcomemessage = "Please click on the Screen to identify a building and see its information \n";
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setTitle("Welcome to BuildingPoint!");
+        alertDialogBuilder.setMessage(welcomemessage);
+                alertDialogBuilder.setPositiveButton("continue",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface arg0, int arg1) {
+                                Toast.makeText(MainActivity.this,"Let's go!",Toast.LENGTH_LONG).show();
+                            }
+                        });
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
     }
 }
