@@ -284,7 +284,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     public void getTFModel(Bitmap bitmap) throws FirebaseMLException {
         final TextView myResult = findViewById(R.id.result);
         Log.i("SUCCESS", "-1");
-/*
+
         //Getting the TensorFlowModel from assets folder
 
         FirebaseLocalModel localSource =
@@ -293,7 +293,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                         .build();
         FirebaseModelManager.getInstance().registerLocalModel(localSource);
 
-*/
+
 
         //Getting the model from FireBase
 
@@ -434,7 +434,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     }
 
     public void WelcomeMessage(View view){
-        String welcomemessage = "Please click on the Screen to identify a building and see its information \n";
+        String welcomemessage = "Please click on the screen to identify a building and see its information \n";
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setTitle("Welcome to BuildingPoint!");
         alertDialogBuilder.setMessage(welcomemessage);
