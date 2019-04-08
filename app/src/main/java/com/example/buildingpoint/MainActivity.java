@@ -107,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     private void checkPermission() {
         if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
             canTakePhoto = true;
-            openCamera();
+            //openCamera();
 
         }
 
@@ -176,6 +176,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         mCamera.startPreview();
 
         try {
+            Log.i("PIC","RED");
             getTFModel(myPhoto);
             canTakePhoto = true;
         } catch (Exception e) {
@@ -186,24 +187,19 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     }
 
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-
-
+        openCamera();
         try {
             mCamera.setPreviewTexture(surface);
             mCamera.startPreview();
         } catch (IOException ioe) {
             // Something bad happened
         }
+
     }
 
     public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
         // Ignored, Camera does all the work for us
-        try {
-            mCamera.setPreviewTexture(surface);
-            mCamera.startPreview();
-        } catch (IOException ioe) {
-            // Something bad happened
-        }
+
     }
 
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
@@ -219,9 +215,12 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     @Override
     protected void onResume() {
         super.onResume();
-        if (!cameraInUse) {
-            openCamera();
-        }
+            if(!cameraInUse){
+                openCamera();
+                Log.i("RESUME","ENTERED");
+            }
+
+
     }
 
     @Override
@@ -229,23 +228,20 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         super.onPause();
         if (cameraInUse) {
             closeCamera();
+            Log.i("RESUME","Entered onPause");
         }
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (cameraInUse) {
-            closeCamera();
-        }
-    }
+
 
     private void openCamera() {
         int cameraID=getId();
         if ((mCamera = Camera.open(cameraID)) == null) {
             Toast.makeText(getApplicationContext(), "Camera not available!",
                     Toast.LENGTH_LONG).show();
+            return;
         }
+
 
         setCameraDisplayOrientation(this,cameraID,mCamera);
         cameraInUse = true;
@@ -315,7 +311,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         //Creating the interperter from the model
 
         FirebaseModelOptions options = new FirebaseModelOptions.Builder()
-                .setRemoteModelName("building-detector").build();
+                .setLocalModelName("my_local_model").build();
         FirebaseModelInterpreter firebaseInterpreter =
                 FirebaseModelInterpreter.getInstance(options);
         Log.i("SUCCESS", "0.5");
@@ -420,7 +416,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     private void getInfo(String label) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         //Task<DocumentSnapshot> tds = db.collection("buildings").document(label).get();
-        Task<DocumentSnapshot> tds = db.collection("buildings").document(label).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+        Task<DocumentSnapshot> tds = db.collection("building").document(label).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 DocumentSnapshot ds = task.getResult();
