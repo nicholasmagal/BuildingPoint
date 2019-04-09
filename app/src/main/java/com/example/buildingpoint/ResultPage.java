@@ -48,6 +48,9 @@ public class ResultPage extends AppCompatActivity {
         catch (Exception e){
             Log.i("PIC","could not be set");
         }
+
+        MainActivity myActivity=new MainActivity();
+        myActivity.getInfo("Cox",getApplicationContext());
     }
 
     public Bitmap setImage() throws Exception {
@@ -70,7 +73,7 @@ public class ResultPage extends AppCompatActivity {
         inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_camera, menu);
 
-        MainActivity m
+
 
         return (true);
     }
