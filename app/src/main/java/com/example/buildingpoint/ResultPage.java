@@ -1,5 +1,6 @@
 package com.example.buildingpoint;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
@@ -9,6 +10,9 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -32,10 +36,18 @@ import java.io.InputStreamReader;
 
 public class ResultPage extends AppCompatActivity {
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_result_page);
+        try{
+            setImage();
+        }
+        catch (Exception e){
+            Log.i("PIC","could not be set");
+        }
     }
 
     public Bitmap setImage() throws Exception {
@@ -47,12 +59,40 @@ public class ResultPage extends AppCompatActivity {
 
         pictureMap = MediaStore.Images.Media.getBitmap(
                 this.getContentResolver(), uriFromString);
-        //pictureZone.setImageBitmap(pictureMap);
+        pictureZone.setImageBitmap(pictureMap);
 
         return pictureMap;
     }
 
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater;
 
+        inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_camera, menu);
+
+        MainActivity m
+
+        return (true);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.live_id:
+                goHome();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+
+    }
+
+    public void goHome(){
+        Intent homeIntent=new Intent();
+        homeIntent.setClass(this,MainActivity.class);
+        startActivityForResult(homeIntent,3);
+
+    }
 
 
 }

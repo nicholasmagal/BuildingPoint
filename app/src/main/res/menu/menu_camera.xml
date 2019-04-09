@@ -2,9 +2,9 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/home_id"
-        android:title="GalleryPoint"
-        android:icon="@drawable/galleryo"
+        android:id="@+id/live_id"
+        android:title="LivePoint"
+        android:icon="@drawable/camera"
         app:showAsAction="ifRoom">
 
     </item>

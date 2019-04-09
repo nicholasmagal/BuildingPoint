@@ -3,41 +3,33 @@ package com.example.buildingpoint;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
-import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.net.Uri;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
-import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.Html;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.Surface;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.common.util.ArrayUtils;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.ml.common.FirebaseMLException;
@@ -52,16 +44,9 @@ import com.google.firebase.ml.custom.FirebaseModelInterpreter;
 import com.google.firebase.ml.custom.FirebaseModelOptions;
 import com.google.firebase.ml.custom.FirebaseModelOutputs;
 
-import org.w3c.dom.Text;
-
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Arrays;
-import java.util.List;
-
-import android.os.AsyncTask;
 
 public class MainActivity extends AppCompatActivity implements TextureView.SurfaceTextureListener, Camera.PictureCallback {
 
@@ -73,19 +58,34 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     private boolean cameraInUse;
     private boolean canTakePhoto;
     static final int REQUEST_IMAGE_CAPTURE = 1;
+    String counter;
+
+
 
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
         cameraInUse = false;
         canTakePhoto = false;
         checkPermission();
-        WelcomeMessage(mTextureView);
+        if (counter==null){
+            WelcomeMessage(mTextureView);
+        }
+
+
+
         //openCamera();
         //goToGallery();
+        createTexture();
+
+
+    }
+
+    public void createTexture() {
         //Let us prepare the Texture View
         mTextureView = new TextureView(this);
         mTextureView.setSurfaceTextureListener(this);
@@ -101,7 +101,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                 }
             }
         });
-
     }
 
     private void checkPermission() {
@@ -109,9 +108,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             canTakePhoto = true;
             //openCamera();
 
-        }
-
-        else {
+        } else {
             /*
             if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
 
@@ -127,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         }
     }
 
-    public static int getId(){
+    public static int getId() {
         int cameraId = -1;
         int numberOfCameras = Camera.getNumberOfCameras();
         for (int i = 0; i < numberOfCameras; i++) {
@@ -139,7 +136,8 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                 break;
             }
         }
-        return  cameraId;
+        Log.i("ID", " " + cameraId);
+        return cameraId;
     }
 
     public static void setCameraDisplayOrientation(Activity activity,
@@ -151,10 +149,18 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                 .getRotation();
         int degrees = 0;
         switch (rotation) {
-            case Surface.ROTATION_0: degrees = 0; break;
-            case Surface.ROTATION_90: degrees = 90; break;
-            case Surface.ROTATION_180: degrees = 180; break;
-            case Surface.ROTATION_270: degrees = 270; break;
+            case Surface.ROTATION_0:
+                degrees = 0;
+                break;
+            case Surface.ROTATION_90:
+                degrees = 90;
+                break;
+            case Surface.ROTATION_180:
+                degrees = 180;
+                break;
+            case Surface.ROTATION_270:
+                degrees = 270;
+                break;
         }
 
         int result;
@@ -168,7 +174,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     }
 
 
-
     @Override
     public void onPictureTaken(byte[] data, Camera camera) {
         Bitmap myPhoto;
@@ -176,7 +181,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         mCamera.startPreview();
 
         try {
-            Log.i("PIC","RED");
+            Log.i("PIC", "RED");
             getTFModel(myPhoto);
             canTakePhoto = true;
         } catch (Exception e) {
@@ -187,7 +192,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     }
 
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-        openCamera();
         try {
             mCamera.setPreviewTexture(surface);
             mCamera.startPreview();
@@ -199,7 +203,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
     public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
         // Ignored, Camera does all the work for us
-
     }
 
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
@@ -210,17 +213,16 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
     public void onSurfaceTextureUpdated(SurfaceTexture surface) {
         // Invoked every time there's a new Camera preview frame
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-            if(!cameraInUse){
-                openCamera();
-                Log.i("RESUME","ENTERED");
-            }
-
-
+        if (!cameraInUse) {
+            openCamera();
+            Log.i("RESUME", "ENTERED");
+        }
     }
 
     @Override
@@ -228,14 +230,14 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         super.onPause();
         if (cameraInUse) {
             closeCamera();
-            Log.i("RESUME","Entered onPause");
+            Log.i("RESUME", "Entered onPause");
         }
     }
 
 
-
     private void openCamera() {
-        int cameraID=getId();
+        int cameraID = getId();
+
         if ((mCamera = Camera.open(cameraID)) == null) {
             Toast.makeText(getApplicationContext(), "Camera not available!",
                     Toast.LENGTH_LONG).show();
@@ -243,7 +245,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         }
 
 
-        setCameraDisplayOrientation(this,cameraID,mCamera);
+        setCameraDisplayOrientation(this, cameraID, mCamera);
         cameraInUse = true;
     }
 
@@ -271,6 +273,13 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                     startActivityForResult(resultIntent, ACTIVITY_RESULT);
                 }
                 break;
+            case 3:
+                if (resultCode == Activity.RESULT_OK) {
+                    counter="HELLO";
+                    Log.i("RETURN","HI");
+                }
+
+
             default:
                 Log.i("ERROR", "U DONE MESSED UP");
                 break;
@@ -288,7 +297,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                         .setAssetFilePath("model.tflite")
                         .build();
         FirebaseModelManager.getInstance().registerLocalModel(localSource);
-
 
 
         //Getting the model from FireBase
@@ -373,7 +381,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                                     }
                                     //String resultForDisplay=predictionProb(probabilities,labels);
                                     //Toast.makeText(getApplicationContext(), resultForDisplay, Toast.LENGTH_SHORT).show();
-                                    getInfo(predictionProb(probabilities,labels));
+                                    getInfo(predictionProb(probabilities, labels));
 
                                 }
 
@@ -391,14 +399,14 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
     }
 
-    private String predictionProb(float[] probabilities,String[] labels) {
+    private String predictionProb(float[] probabilities, String[] labels) {
         float max = 0;
         int index = 100;
         int length = probabilities.length;
         for (int i = 0; i < length; i++) {
             if (probabilities[i] > max) {
                 max = probabilities[i];
-                index=i;
+                index = i;
             }
         }
         //String resultForAndroid=String.format("%s: %1.4f",labels[index] ,max);
@@ -429,19 +437,42 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         });
     }
 
-    public void WelcomeMessage(View view){
+    public void WelcomeMessage(View view) {
         String welcomemessage = "Please click on the screen to identify a building and see its information \n";
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setTitle("Welcome to BuildingPoint!");
         alertDialogBuilder.setMessage(welcomemessage);
-                alertDialogBuilder.setPositiveButton("continue",
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface arg0, int arg1) {
-                                Toast.makeText(MainActivity.this,"Let's go!",Toast.LENGTH_LONG).show();
-                            }
-                        });
+        alertDialogBuilder.setPositiveButton("continue",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface arg0, int arg1) {
+                        //  Toast.makeText(MainActivity.this,"Let's go!",Toast.LENGTH_LONG).show();
+                    }
+                });
         AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater;
+
+        inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu, menu);
+
+        return (true);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.home_id:
+                goToGallery();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+
 }
