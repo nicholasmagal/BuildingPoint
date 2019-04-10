@@ -3,6 +3,7 @@ package com.example.buildingpoint;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -75,14 +76,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         if (counter==null){
             WelcomeMessage(mTextureView);
         }
-
-
-
-        //openCamera();
-        //goToGallery();
-        createTexture();
-
-
     }
 
     public void createTexture() {
@@ -220,6 +213,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     protected void onResume() {
         super.onResume();
         if (!cameraInUse) {
+            createTexture();
             openCamera();
             Log.i("RESUME", "ENTERED");
         }
@@ -228,14 +222,24 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     @Override
     protected void onPause() {
         super.onPause();
+        releaseCameraAndPreview();
         if (cameraInUse) {
             closeCamera();
             Log.i("RESUME", "Entered onPause");
         }
+
+    }
+
+    private void releaseCameraAndPreview() {
+
+        if (mTextureView != null) {
+            mTextureView.destroyDrawingCache();
+        }
     }
 
 
-    private void openCamera() {
+
+        private void openCamera() {
         int cameraID = getId();
 
         if ((mCamera = Camera.open(cameraID)) == null) {
@@ -381,7 +385,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                                     }
                                     //String resultForDisplay=predictionProb(probabilities,labels);
                                     //Toast.makeText(getApplicationContext(), resultForDisplay, Toast.LENGTH_SHORT).show();
-                                    getInfo(predictionProb(probabilities, labels));
+                                    getInfo(predictionProb(probabilities, labels),getApplicationContext());
 
                                 }
 
@@ -421,7 +425,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         startActivityForResult(galleryIntent, ACTIVITY_SELECT_PICTURE);
     }
 
-    private void getInfo(String label) {
+    public void getInfo(String label, final Context myContext) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         //Task<DocumentSnapshot> tds = db.collection("buildings").document(label).get();
         Task<DocumentSnapshot> tds = db.collection("building").document(label).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -432,7 +436,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                 Object bDepartment = ds.get("department");
                 Object bAddress = ds.get("address");
                 String resultForDisplay = bName.toString() + "\n" + bDepartment.toString() + "\n" + bAddress.toString();
-                Toast.makeText(getApplicationContext(), resultForDisplay, Toast.LENGTH_SHORT).show();
+                Toast.makeText(myContext, resultForDisplay, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -473,6 +477,8 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                 return super.onOptionsItemSelected(item);
         }
     }
+
+
 
 
 }
