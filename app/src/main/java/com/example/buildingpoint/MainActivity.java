@@ -76,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         if (counter==null){
             WelcomeMessage(mTextureView);
         }
+
     }
 
     public void createTexture() {
@@ -199,8 +200,8 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     }
 
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-        mCamera.stopPreview();
-        mCamera.release();
+        //mCamera.stopPreview();
+        //mCamera.release();
         return true;
     }
 
@@ -222,9 +223,10 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     @Override
     protected void onPause() {
         super.onPause();
-        releaseCameraAndPreview();
+
         if (cameraInUse) {
             closeCamera();
+            releaseCameraAndPreview();
             Log.i("RESUME", "Entered onPause");
         }
 
