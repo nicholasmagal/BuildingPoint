@@ -439,9 +439,30 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                 Object bAddress = ds.get("address");
                 String resultForDisplay = bName.toString() + "\n" + bDepartment.toString() + "\n" + bAddress.toString();
                 Toast.makeText(myContext, resultForDisplay, Toast.LENGTH_SHORT).show();
+                String Name = bName.toString();
+                String Department = bDepartment.toString();
+                String Address = bAddress.toString();
+
+
+                openDialog(Name, Department, Address);
             }
         });
     }
+
+    public void openDialog (String Name, String Department, String Address){
+        BuildingDialog buildingDialog = new BuildingDialog();
+
+        Bundle args = new Bundle();
+        args.putString("Name", Name);
+        args.putString("Department", Department);
+        args.putString("Address", Address);
+        buildingDialog.setArguments(args);
+        buildingDialog.show(getSupportFragmentManager(), "exampledialog");
+
+    }
+
+
+
 
     public void WelcomeMessage(View view) {
         String welcomemessage = "Please click on the screen to identify a building and see its information \n";
