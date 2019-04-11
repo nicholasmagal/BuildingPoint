@@ -438,13 +438,15 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                 Object bDepartment = ds.get("department");
                 Object bAddress = ds.get("address");
                 String resultForDisplay = bName.toString() + "\n" + bDepartment.toString() + "\n" + bAddress.toString();
-                Toast.makeText(myContext, resultForDisplay, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(myContext, resultForDisplay, Toast.LENGTH_SHORT).show();
                 String Name = bName.toString();
                 String Department = bDepartment.toString();
                 String Address = bAddress.toString();
 
 
-                openDialog(Name, Department, Address);
+                //openDialog(Name, Department, Address);
+                ViewDialog alert = new ViewDialog();
+                alert.showDialog(MainActivity.this, Name,Department,Address);
             }
         });
     }
