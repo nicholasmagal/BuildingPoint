@@ -2,7 +2,10 @@ package com.example.buildingpoint;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.res.ResourcesCompat;
 import android.text.Html;
 import android.view.Gravity;
 import android.view.View;
@@ -10,6 +13,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
+
 
 public class ViewDialog {
 
@@ -24,14 +28,15 @@ public class ViewDialog {
         TextView name = dialog.findViewById(R.id.name_holder);
         TextView dep = dialog.findViewById(R.id.department_holder);
         TextView address = dialog.findViewById(R.id.address_holder);
-        Button exit= dialog.findViewById(R.id.exit_button);
-
-
+        Button exit = dialog.findViewById(R.id.exit_button);
 
 
         name.setText(Name);
+        name.setTextColor(Color.WHITE);
         dep.setText(Department);
+        dep.setTextColor(Color.WHITE);
         address.setText(Address);
+        address.setTextColor(Color.WHITE);
 
 
         //Stick it on the bottem and resume the darkened screen
@@ -49,21 +54,27 @@ public class ViewDialog {
         lp.width = WindowManager.LayoutParams.MATCH_PARENT;
 
 
+        //Showing the dialog
         dialog.show();
+
+        //Setting the backgroundcolor
+        //int color=ContextCompat.getColor(ViewDialog.this,R.color.myOrange);
+
+
+       // dialog.getWindow().setBackgroundDrawableResoure(color);
         //setting the horizontal portion
         dialog.getWindow().setAttributes(lp);
         //Click handler for exiting
 
 
         //Setting up the button to exit the dilog
-        exit.setOnClickListener(new View.OnClickListener()
-        {
+        exit.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(View v) {
                 dialog.dismiss();
             }
         });
+
     }
 
 
