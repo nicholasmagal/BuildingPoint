@@ -503,6 +503,10 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         }
     }
 
+    public void exit(){
+
+    }
+
 
 
 
