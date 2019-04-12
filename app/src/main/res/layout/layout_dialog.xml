@@ -4,21 +4,52 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_gravity="center"
-    android:gravity="center">
+    android:gravity="center"
+    >
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/name_title"
+        android:text="Title"
+        android:textColor="@color/colorPrimary"
+        android:gravity="center"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/name_holder"
+        android:gravity="center"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/department"
+        android:text="Department"
+        android:textColor="@color/colorPrimary"
+        android:gravity="center"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/department_holder"
+        android:gravity="center"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/name_address"
+        android:text="Address"
+        android:textColor="@color/colorPrimary"
+        android:gravity="center"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/name_holder"/>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/department_holder"/>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/address_holder"/>
-
+        android:id="@+id/address_holder"
+        android:gravity="center"/>
+    <Button
+        android:layout_width="200dp"
+        android:layout_height="match_parent"
+        android:text="Exit"
+        android:id="@+id/exit_button"/>
 
 
 </LinearLayout>

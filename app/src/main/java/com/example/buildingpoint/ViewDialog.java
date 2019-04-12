@@ -3,6 +3,7 @@ package com.example.buildingpoint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.os.Bundle;
+import android.text.Html;
 import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
@@ -22,6 +23,10 @@ public class ViewDialog {
         TextView dep=(TextView) dialog.findViewById(R.id.department_holder);
         TextView address=(TextView) dialog.findViewById(R.id.address_holder);
 
+
+
+
+
         name.setText(Name);
         dep.setText(Department);
         address.setText(Address);
@@ -35,7 +40,18 @@ public class ViewDialog {
         wlp.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
         window.setAttributes(wlp);
 
+        //Setting the dialog to be the entire horiztal screen
+
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+        lp.copyFrom(dialog.getWindow().getAttributes());
+        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+
+
         dialog.show();
+        dialog.getWindow().setAttributes(lp);
+
+
+
 
     }
 }
