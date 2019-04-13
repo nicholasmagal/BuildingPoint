@@ -49,10 +49,14 @@ public class ResultPage extends AppCompatActivity {
             Log.i("PIC","could not be set");
         }
 
-        MainActivity myActivity=new MainActivity();
-        myActivity.getInfo("Cox",getApplicationContext());
+        // MainActivity myActivity=new MainActivity();
+        //myActivity.getInfo("Cox",getApplicationContext());
     }
 
+    public void getEstimate(){
+        
+    }
+    //Sets the image of the activity
     public Bitmap setImage() throws Exception {
         Bitmap pictureMap;
         ImageView pictureZone = findViewById(R.id.preview_photo);
@@ -66,7 +70,7 @@ public class ResultPage extends AppCompatActivity {
 
         return pictureMap;
     }
-
+    //Creates option at the action bar
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater;
 
@@ -77,7 +81,7 @@ public class ResultPage extends AppCompatActivity {
 
         return (true);
     }
-
+    //Options for selecting the menu that calls the method to bring app back home
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
@@ -89,7 +93,7 @@ public class ResultPage extends AppCompatActivity {
         }
 
     }
-
+    //Action to bring activity back home
     public void goHome(){
         Intent homeIntent=new Intent();
         homeIntent.setClass(this,MainActivity.class);
