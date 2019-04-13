@@ -54,7 +54,7 @@ public class ResultPage extends AppCompatActivity {
     }
 
     public void getEstimate(){
-        
+
     }
     //Sets the image of the activity
     public Bitmap setImage() throws Exception {

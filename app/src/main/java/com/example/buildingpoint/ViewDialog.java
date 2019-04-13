@@ -61,7 +61,7 @@ public class ViewDialog {
         //int color=ContextCompat.getColor(ViewDialog.this,R.color.myOrange);
 
 
-       // dialog.getWindow().setBackgroundDrawableResoure(color);
+        // dialog.getWindow().setBackgroundDrawableResoure(color);
         //setting the horizontal portion
         dialog.getWindow().setAttributes(lp);
         //Click handler for exiting

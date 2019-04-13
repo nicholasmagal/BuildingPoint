@@ -105,7 +105,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         } else {
             /*
             if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
-
                 Toast.makeText(this, "Camera permission is needed to show the camera preview.", Toast.LENGTH_SHORT).show();
             }
             */
@@ -187,6 +186,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
         try {
+            openCamera();
             mCamera.setPreviewTexture(surface);
             mCamera.startPreview();
         } catch (IOException ioe) {
@@ -241,7 +241,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
 
 
-        private void openCamera() {
+    private void openCamera() {
         int cameraID = getId();
 
         if ((mCamera = Camera.open(cameraID)) == null) {
