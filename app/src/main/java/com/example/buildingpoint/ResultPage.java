@@ -117,7 +117,7 @@ public class ResultPage extends AppCompatActivity {
     }
 
     public void getTFModel(Bitmap bitmap) throws FirebaseMLException {
-        final TextView myResult = findViewById(R.id.result);
+
         Log.i("SUCCESS", "-1");
 
         //Getting the TensorFlowModel from assets folder
@@ -364,6 +364,9 @@ public class ResultPage extends AppCompatActivity {
                     } catch (Exception e) {
                         Log.i("settingPhoto", "not working");
                     }
+                }
+                else {
+                    goHome();
                 }
                 break;
             default:

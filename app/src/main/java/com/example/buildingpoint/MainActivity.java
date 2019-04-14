@@ -308,7 +308,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     }
 
     public void getTFModel(Bitmap bitmap) throws FirebaseMLException {
-        final TextView myResult = findViewById(R.id.result);
+
         Log.i("SUCCESS", "-1");
 
         //Getting the TensorFlowModel from assets folder
