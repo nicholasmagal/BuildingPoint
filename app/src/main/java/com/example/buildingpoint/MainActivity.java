@@ -96,6 +96,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                 Log.i("Tap", "U r clicking");
                 if (canTakePhoto) {
                     mCamera.takePicture(null, null, null, MainActivity.this);
+                    mTextureView.setClickable(false);
                     canTakePhoto = false;
                 }
             }
@@ -392,9 +393,10 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                                     }
                                     //String resultForDisplay=predictionProb(probabilities,labels);
                                     //Toast.makeText(getApplicationContext(), resultForDisplay, Toast.LENGTH_SHORT).show();
-                                    getInfo(predictionProb(probabilities, labels),getApplicationContext());
+
 
                                 }
+                                getInfo(predictionProb(probabilities, labels),getApplicationContext());
 
                             }
                         })
@@ -510,6 +512,8 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
 
     public void showDialog(Activity activity, String Name, String Department, String Address) {
+        Log.i("DialogC","It is done");
+        mTextureView.setClickable(false);
         final Dialog dialog = new Dialog(activity);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setCancelable(false);
@@ -564,6 +568,8 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             public void onClick(View v) {
 
                 dialog.dismiss();
+                mTextureView.setClickable(true);
+
             }
         });
 
