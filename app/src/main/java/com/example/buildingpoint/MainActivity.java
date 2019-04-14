@@ -183,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         activitySwitchGuard=false;
         Bitmap myPhoto;
         myPhoto = BitmapFactory.decodeByteArray(data, 0, data.length);
-        mCamera.startPreview();
+        //mCamera.startPreview();
 
         try {
             Log.i("PIC", "RED");
@@ -589,6 +589,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             public void onClick(View v) {
 
                 dialog.dismiss();
+                mCamera.startPreview();
                 mTextureView.setClickable(true);
 
             }
