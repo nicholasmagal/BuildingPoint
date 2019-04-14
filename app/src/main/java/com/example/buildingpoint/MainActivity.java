@@ -288,6 +288,9 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                     resultIntent.putExtra("theURI", selectedURI.toString());
                     startActivityForResult(resultIntent, ACTIVITY_RESULT);
                 }
+                else {
+                    canTakePhoto = true;
+                }
                 break;
             case 3:
                 if (resultCode == Activity.RESULT_OK) {
