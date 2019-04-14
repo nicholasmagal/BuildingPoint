@@ -562,6 +562,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         exit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 dialog.dismiss();
             }
         });
