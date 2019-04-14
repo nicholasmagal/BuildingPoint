@@ -12,6 +12,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.style.UnderlineSpan;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -287,7 +289,11 @@ public class ResultPage extends AppCompatActivity {
         dep.setTextColor(Color.WHITE);
         address.setText(Address);
         address.setClickable(true);
-        address.setTextColor(Color.WHITE);
+        address.setTextColor(Color.BLUE);
+
+        SpannableString content = new SpannableString(Address);
+        content.setSpan(new UnderlineSpan(), 0, content.length(), 0);
+        address.setText(content);
 
         address.setOnClickListener(new View.OnClickListener() {
             @Override
