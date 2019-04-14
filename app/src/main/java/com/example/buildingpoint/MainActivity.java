@@ -65,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     private boolean canTakePhoto;
     static final int REQUEST_IMAGE_CAPTURE = 1;
     String counter;
+    boolean activitySwitchGuard;
 
 
 
@@ -75,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+        activitySwitchGuard=true;
         cameraInUse = false;
         canTakePhoto = false;
         checkPermission();
@@ -85,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     }
 
     public void createTexture() {
+
         //Let us prepare the Texture View
         mTextureView = new TextureView(this);
         mTextureView.setSurfaceTextureListener(this);
@@ -175,6 +178,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
     @Override
     public void onPictureTaken(byte[] data, Camera camera) {
+        activitySwitchGuard=false;
         Bitmap myPhoto;
         myPhoto = BitmapFactory.decodeByteArray(data, 0, data.length);
         mCamera.startPreview();
@@ -396,7 +400,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
 
                                 }
-                                getInfo(predictionProb(probabilities, labels),getApplicationContext());
+                                getInfo(predictionProb(probabilities, labels));
 
                             }
                         })
@@ -434,7 +438,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         startActivityForResult(galleryIntent, ACTIVITY_SELECT_PICTURE);
     }
 
-    public void getInfo(String label, final Context myContext) {
+    public void getInfo(String label) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         //Task<DocumentSnapshot> tds = db.collection("buildings").document(label).get();
         Task<DocumentSnapshot> tds = db.collection("building").document(label).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -449,7 +453,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                 String Name = bName.toString();
                 String Department = bDepartment.toString();
                 String Address = bAddress.toString();
-
 
                 //openDialog(Name, Department, Address);
 
@@ -469,9 +472,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         buildingDialog.show(getSupportFragmentManager(), "exampledialog");
 
     }
-
-
-
 
     public void WelcomeMessage(View view) {
         String welcomemessage = "Please click on the screen to identify a building and see its information \n";
@@ -503,7 +503,9 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.home_id:
-                goToGallery();
+                if (activitySwitchGuard==true){
+                    goToGallery();
+                }
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -551,11 +553,10 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
         //Showing the dialog
         dialog.show();
+        activitySwitchGuard=true;
 
         //Setting the backgroundcolor
         //int color=ContextCompat.getColor(ViewDialog.this,R.color.myOrange);
-
-
         // dialog.getWindow().setBackgroundDrawableResoure(color);
         //setting the horizontal portion
         dialog.getWindow().setAttributes(lp);
