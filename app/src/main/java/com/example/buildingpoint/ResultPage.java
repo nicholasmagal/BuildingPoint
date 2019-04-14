@@ -84,6 +84,7 @@ public class ResultPage extends AppCompatActivity {
         return pictureMap;
     }
 
+    /*
     //Creates option at the action bar
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater;
@@ -94,6 +95,7 @@ public class ResultPage extends AppCompatActivity {
 
         return (true);
     }
+
 
     //Options for selecting the menu that calls the method to bring app back home
     @Override
@@ -107,6 +109,7 @@ public class ResultPage extends AppCompatActivity {
         }
 
     }
+    */
 
     //Action to bring activity back home
     public void goHome() {
@@ -273,13 +276,14 @@ public class ResultPage extends AppCompatActivity {
         final Dialog dialog = new Dialog(activity);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setCancelable(false);
-        dialog.setContentView(R.layout.layout_dialog);
+        dialog.setContentView(R.layout.layout_dialog2);
 
         //Setting the textView up
         TextView name = dialog.findViewById(R.id.name_holder);
         TextView dep = dialog.findViewById(R.id.department_holder);
         TextView address = dialog.findViewById(R.id.address_holder);
         Button exit = dialog.findViewById(R.id.exit_button);
+        Button home = dialog.findViewById(R.id.home_button);
         exit.setText("Back to Gallery");
 
 
@@ -341,6 +345,13 @@ public class ResultPage extends AppCompatActivity {
                 goToGallery();
 
 
+            }
+        });
+
+        home.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                goHome();
             }
         });
 
