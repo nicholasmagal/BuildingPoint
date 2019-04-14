@@ -266,7 +266,7 @@ public class ResultPage extends AppCompatActivity {
         });
     }
 
-    public void showDialog(Activity activity, String Name, String Department, String Address) {
+    public void showDialog(Activity activity, String Name, String Department, final String Address) {
         Log.i("DialogC", "It is done");
         final Dialog dialog = new Dialog(activity);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -286,7 +286,18 @@ public class ResultPage extends AppCompatActivity {
         dep.setText(Department);
         dep.setTextColor(Color.WHITE);
         address.setText(Address);
+        address.setClickable(true);
         address.setTextColor(Color.WHITE);
+
+        address.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Uri gmmIntentUri = Uri.parse("geo:0,0?q=" + Uri.encode(Address));
+                Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                mapIntent.setPackage("com.google.android.apps.maps");
+                startActivity(mapIntent);
+            }
+        });
 
 
         //Stick it on the bottem and resume the darkened screen
