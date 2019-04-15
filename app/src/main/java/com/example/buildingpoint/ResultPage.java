@@ -293,7 +293,7 @@ public class ResultPage extends AppCompatActivity {
         dep.setTextColor(Color.WHITE);
         address.setText(Address);
         address.setClickable(true);
-        address.setTextColor(Color.BLUE);
+        address.setTextColor(Color.YELLOW);
 
         SpannableString content = new SpannableString(Address);
         content.setSpan(new UnderlineSpan(), 0, content.length(), 0);
