@@ -68,6 +68,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     static final int REQUEST_IMAGE_CAPTURE = 1;
     String counter;
     boolean activitySwitchGuard;
+    static boolean checkFirstTime = true;
 
 
 
@@ -82,8 +83,9 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         cameraInUse = false;
         canTakePhoto = false;
         checkPermission();
-        if (counter==null){
+        if (checkFirstTime == true){
             WelcomeMessage(mTextureView);
+            checkFirstTime = false;
         }
 
     }
