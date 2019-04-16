@@ -13,7 +13,9 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.location.Location;
 import android.net.Uri;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -34,6 +36,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -70,6 +77,15 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     boolean activitySwitchGuard;
     static boolean checkFirstTime = true;
 
+    //GPS stuff
+    private final int RESOLVE_SETTINGS = 1;
+    private FusedLocationProviderClient fusedLocationClient;
+    private Location currentLocation;
+    private LocationRequest locationRequest;
+    private final int interval=10000;
+
+
+
 
 
 
@@ -87,7 +103,69 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             WelcomeMessage(mTextureView);
             checkFirstTime = false;
         }
+        setLocationRequest();
 
+    }
+
+    protected void setLocationRequest(){
+        //This is our connecting point
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(
+                this);
+        //setting up locationRequest Timing
+        locationRequest = new LocationRequest();
+        locationRequest.setInterval(interval);
+        locationRequest.setFastestInterval(interval/2);
+        //Start locating
+        startLocating(LocationRequest.PRIORITY_HIGH_ACCURACY);
+    }
+
+    //Called to start the location process
+    private void startLocating(int accuracy) {
+
+        locationRequest.setPriority(accuracy);
+        try {
+            fusedLocationClient.requestLocationUpdates(locationRequest,
+                    myLocationCallback, Looper.myLooper());
+        } catch (SecurityException e) {
+            Toast.makeText(this,"Permission denied", Toast.LENGTH_SHORT).show();
+        }
+    }
+    //This is the thing that calls back and updates your location
+
+    LocationCallback myLocationCallback = new LocationCallback() {
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+
+            onLocationChanged(locationResult.getLastLocation());
+        }
+    };
+    public void onLocationChanged(Location newLocation) {
+
+        TextView locationText;
+        String currentText;
+
+
+        if (newLocation == null) {
+            Toast.makeText(this,"No location",Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+
+        currentText = " ";
+
+        currentLocation = newLocation;
+
+        /*currentText += "\nProvider " + currentLocation.getProvider() +
+                " found location\n";*/
+
+
+
+        currentText += String.format("%.2f %s",currentLocation.getLatitude(),
+                currentLocation.getLatitude() >= 0.0?"N":"S") + "   ";
+        currentText += String.format("%.2f %s",currentLocation.getLongitude(),
+                currentLocation.getLongitude() >= 0.0?"E":"W")  + "   ";
+
+        Toast.makeText(this," "+currentText,Toast.LENGTH_LONG).show();
     }
 
     public void createTexture() {
@@ -599,7 +677,10 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        fusedLocationClient.removeLocationUpdates(myLocationCallback);
 
-
-
+    }
 }
