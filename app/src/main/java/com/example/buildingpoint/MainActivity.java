@@ -50,6 +50,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.ml.common.FirebaseMLException;
 import com.google.firebase.ml.common.modeldownload.FirebaseLocalModel;
 import com.google.firebase.ml.common.modeldownload.FirebaseModelDownloadConditions;
@@ -61,6 +62,7 @@ import com.google.firebase.ml.custom.FirebaseModelInputs;
 import com.google.firebase.ml.custom.FirebaseModelInterpreter;
 import com.google.firebase.ml.custom.FirebaseModelOptions;
 import com.google.firebase.ml.custom.FirebaseModelOutputs;
+import com.google.type.LatLng;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -81,6 +83,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     boolean activitySwitchGuard;
     static boolean checkFirstTime = true;
 
+    FirebaseFirestore db;
     private FusedLocationProviderClient fusedLocationClient;
 
 
@@ -92,6 +95,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        db = FirebaseFirestore.getInstance();
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         setContentView(R.layout.activity_main);
@@ -107,31 +111,8 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
     }
 
-    /*
-    private void locationRequest() {
-        LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-        try {
-            location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        }
-        catch (SecurityException e) {
-            Log.i("location", "Failed");
-        }
 
-        double longitude = location.getLongitude();
-        double latitude = location.getLatitude();
-
-        String currentText = " ";
-        currentText += String.format("%.2f %s",latitude,
-                latitude >= 0.0?"N":"S") + "   ";
-        currentText += String.format("%.2f %s",longitude,
-                longitude >= 0.0?"E":"W")  + "   ";
-
-        Toast.makeText(this," "+currentText,Toast.LENGTH_LONG).show();
-
-    }
-    */
-
-    private void newLocationRequest() {
+    private void newLocationRequest(final String label_geo) {
         try {
             fusedLocationClient.getLastLocation()
                     .addOnSuccessListener(this, new OnSuccessListener<Location>() {
@@ -140,9 +121,10 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                             // Got last known location. In some rare situations this can be null.
 
                             if (location != null) {
-                                double longitude = location.getLongitude();
-                                double latitude = location.getLatitude();
+                                final double longitude = location.getLongitude();
+                                final double latitude = location.getLatitude();
 
+                                /*
                                 String currentText = " ";
                                 currentText += String.format("%.2f %s",latitude,
                                         latitude >= 0.0?"N":"S") + "   ";
@@ -150,8 +132,42 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                                         longitude >= 0.0?"E":"W")  + "   ";
 
                                 Toast.makeText(MainActivity.this," "+currentText,Toast.LENGTH_LONG).show();
+                                */
+
+                                Task<DocumentSnapshot> tds2 = db.collection("building").document(label_geo).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                        DocumentSnapshot ds2 = task.getResult();
+
+                                        GeoPoint bPoint = ds2.getGeoPoint("location");
+                                        GeoPoint uPoint = new GeoPoint(latitude,longitude);
+
+                                        Location bLoc = new Location("");
+                                        bLoc.setLatitude(bPoint.getLatitude());
+                                        bLoc.setLongitude(bPoint.getLongitude());
+
+                                        Location uLoc = new Location("");
+                                        uLoc.setLatitude(uPoint.getLatitude());
+                                        uLoc.setLongitude(uPoint.getLongitude());
+
+                                        double distanceInMeters = uLoc.distanceTo(bLoc);
+                                        handleDistance(distanceInMeters, label_geo);
+
+                                    }
+                                });
+
+
+
+
+
+
+
+
                             }
                         }
+
+
+
                     });
         }
         catch (SecurityException e) {
@@ -159,6 +175,14 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         }
     }
 
+
+    private void handleDistance(Double dis, String dialogLabel){
+        if(dis > 100.0) {
+            backgroundDialogue(this);
+        } else {
+            getInfo(dialogLabel);
+        }
+    }
 
     public void createTexture() {
 
@@ -200,21 +224,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         }
 
     }
-
-    /*
-    private void checkLocationPermission() {
-        if(checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-
-            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                //do nothing
-            } else {
-                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_LOCATION);
-
-                checkLocationPermission();
-            }
-        }
-    }
-    */
 
     public static int getId() {
         int cameraId = -1;
@@ -274,7 +283,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         //mCamera.startPreview();
         try {
             Log.i("PIC", "RED");
-            newLocationRequest();
             getTFModel(myPhoto);
             canTakePhoto = true;
         } catch (Exception e) {
@@ -493,7 +501,8 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
 
                                 }
-                                getInfo(predictionProb(probabilities, labels));
+                                newLocationRequest(predictionProb(probabilities, labels));
+                                //getInfo(predictionProb(probabilities, labels));
 
                             }
                         })
@@ -532,7 +541,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     }
 
     public void getInfo(String label) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
         //Task<DocumentSnapshot> tds = db.collection("buildings").document(label).get();
         Task<DocumentSnapshot> tds = db.collection("building").document(label).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -552,18 +560,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                 showDialog(MainActivity.this, Name,Department,Address);
             }
         });
-    }
-
-    public void openDialog (String Name, String Department, String Address){
-        BuildingDialog buildingDialog = new BuildingDialog();
-
-        Bundle args = new Bundle();
-        args.putString("Name", Name);
-        args.putString("Department", Department);
-        args.putString("Address", Address);
-        buildingDialog.setArguments(args);
-        buildingDialog.show(getSupportFragmentManager(), "exampledialog");
-
     }
 
     public void WelcomeMessage(View view) {
@@ -684,6 +680,63 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         });
 
     }
+
+    public void backgroundDialogue(Activity activity) {
+        mTextureView.setClickable(false);
+        final Dialog dialog2 = new Dialog(activity);
+        dialog2.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog2.setCancelable(false);
+        dialog2.setContentView(R.layout.background_dialogue);
+
+        //Setting the textView up
+
+        Button exit2 = dialog2.findViewById(R.id.exit_button2);
+
+
+        //Stick it on the bottem and resume the darkened screen
+        Window window = dialog2.getWindow();
+        WindowManager.LayoutParams wlp = window.getAttributes();
+
+        wlp.gravity = Gravity.BOTTOM;
+        wlp.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
+        window.setAttributes(wlp);
+
+        //Setting the dialog to be the entire horiztal screen
+
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+        lp.copyFrom(dialog2.getWindow().getAttributes());
+        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+
+        //Showing the dialog
+        dialog2.show();
+        activitySwitchGuard=true;
+
+        //Setting the backgroundcolor
+        //int color=ContextCompat.getColor(ViewDialog.this,R.color.myOrange);
+        // dialog.getWindow().setBackgroundDrawableResoure(color);
+        //setting the horizontal portion
+        dialog2.getWindow().setAttributes(lp);
+        //Click handler for exiting
+
+
+        //Setting up the button to exit the dilog
+        exit2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                dialog2.dismiss();
+                mCamera.startPreview();
+                mTextureView.setClickable(true);
+
+            }
+        });
+
+    }
+
+
+
+
+
 
     @Override
     protected void onDestroy() {

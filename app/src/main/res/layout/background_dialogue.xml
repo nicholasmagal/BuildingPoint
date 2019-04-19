@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:background="@color/colorPrimary"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/background_dialogue"
+        android:text="Background Noise"
+        android:textColor="@color/myOrange"
+        android:textSize="30dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:layout_margin="20dp"/>
+
+    <Button
+        android:id="@+id/exit_button2"
+        android:layout_width="200dp"
+        android:layout_height="match_parent"
+        android:text="Exit"
+        android:textColor="@color/myOrange"/>
+
+</LinearLayout>
