@@ -14,9 +14,12 @@ import android.graphics.Color;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.location.Location;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.SpannableString;
@@ -67,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
     final int ACTIVITY_SELECT_PICTURE = 1;
     final int ACTIVITY_RESULT = 2;
+    final int MY_PERMISSIONS_REQUEST_LOCATION = 3;
     //Camera Stuff
     private Camera mCamera;
     private TextureView mTextureView;
@@ -77,12 +81,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     boolean activitySwitchGuard;
     static boolean checkFirstTime = true;
 
-    //GPS stuff
-    private final int RESOLVE_SETTINGS = 1;
     private FusedLocationProviderClient fusedLocationClient;
-    private Location currentLocation;
-    private LocationRequest locationRequest;
-    private final int interval=10000;
 
 
 
@@ -93,6 +92,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         setContentView(R.layout.activity_main);
         activitySwitchGuard=true;
@@ -103,70 +103,62 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             WelcomeMessage(mTextureView);
             checkFirstTime = false;
         }
-        setLocationRequest();
+        //locationRequest();
 
     }
 
-    protected void setLocationRequest(){
-        //This is our connecting point
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(
-                this);
-        //setting up locationRequest Timing
-        locationRequest = new LocationRequest();
-        locationRequest.setInterval(interval);
-        locationRequest.setFastestInterval(interval/2);
-        //Start locating
-        startLocating(LocationRequest.PRIORITY_HIGH_ACCURACY);
-    }
-
-    //Called to start the location process
-    private void startLocating(int accuracy) {
-
-        locationRequest.setPriority(accuracy);
+    /*
+    private void locationRequest() {
+        LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         try {
-            fusedLocationClient.requestLocationUpdates(locationRequest,
-                    myLocationCallback, Looper.myLooper());
-        } catch (SecurityException e) {
-            Toast.makeText(this,"Permission denied", Toast.LENGTH_SHORT).show();
+            location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         }
-    }
-    //This is the thing that calls back and updates your location
-
-    LocationCallback myLocationCallback = new LocationCallback() {
-        @Override
-        public void onLocationResult(LocationResult locationResult) {
-
-            onLocationChanged(locationResult.getLastLocation());
-        }
-    };
-    public void onLocationChanged(Location newLocation) {
-
-        TextView locationText;
-        String currentText;
-
-
-        if (newLocation == null) {
-            Toast.makeText(this,"No location",Toast.LENGTH_SHORT).show();
-            return;
+        catch (SecurityException e) {
+            Log.i("location", "Failed");
         }
 
+        double longitude = location.getLongitude();
+        double latitude = location.getLatitude();
 
-        currentText = " ";
-
-        currentLocation = newLocation;
-
-        /*currentText += "\nProvider " + currentLocation.getProvider() +
-                " found location\n";*/
-
-
-
-        currentText += String.format("%.2f %s",currentLocation.getLatitude(),
-                currentLocation.getLatitude() >= 0.0?"N":"S") + "   ";
-        currentText += String.format("%.2f %s",currentLocation.getLongitude(),
-                currentLocation.getLongitude() >= 0.0?"E":"W")  + "   ";
+        String currentText = " ";
+        currentText += String.format("%.2f %s",latitude,
+                latitude >= 0.0?"N":"S") + "   ";
+        currentText += String.format("%.2f %s",longitude,
+                longitude >= 0.0?"E":"W")  + "   ";
 
         Toast.makeText(this," "+currentText,Toast.LENGTH_LONG).show();
+
     }
+    */
+
+    private void newLocationRequest() {
+        try {
+            fusedLocationClient.getLastLocation()
+                    .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                        @Override
+                        public void onSuccess(Location location) {
+                            // Got last known location. In some rare situations this can be null.
+
+                            if (location != null) {
+                                double longitude = location.getLongitude();
+                                double latitude = location.getLatitude();
+
+                                String currentText = " ";
+                                currentText += String.format("%.2f %s",latitude,
+                                        latitude >= 0.0?"N":"S") + "   ";
+                                currentText += String.format("%.2f %s",longitude,
+                                        longitude >= 0.0?"E":"W")  + "   ";
+
+                                Toast.makeText(MainActivity.this," "+currentText,Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    });
+        }
+        catch (SecurityException e) {
+            Log.i("l", "loc");
+        }
+    }
+
 
     public void createTexture() {
 
@@ -189,7 +181,8 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     }
 
     private void checkPermission() {
-        if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+        if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             canTakePhoto = true;
             //openCamera();
 
@@ -199,14 +192,29 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                 Toast.makeText(this, "Camera permission is needed to show the camera preview.", Toast.LENGTH_SHORT).show();
             }
             */
-            requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_IMAGE_CAPTURE);
+            requestPermissions(new String[]{Manifest.permission.CAMERA,Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_IMAGE_CAPTURE);
 
 
             checkPermission();
 
+        }
 
+    }
+
+    /*
+    private void checkLocationPermission() {
+        if(checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                //do nothing
+            } else {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_LOCATION);
+
+                checkLocationPermission();
+            }
         }
     }
+    */
 
     public static int getId() {
         int cameraId = -1;
@@ -264,9 +272,9 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         Bitmap myPhoto;
         myPhoto = BitmapFactory.decodeByteArray(data, 0, data.length);
         //mCamera.startPreview();
-
         try {
             Log.i("PIC", "RED");
+            newLocationRequest();
             getTFModel(myPhoto);
             canTakePhoto = true;
         } catch (Exception e) {
@@ -388,7 +396,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     }
 
     public void getTFModel(Bitmap bitmap) throws FirebaseMLException {
-
+        //checkLocationPermission();
         Log.i("SUCCESS", "-1");
 
         //Getting the TensorFlowModel from assets folder
@@ -680,7 +688,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        fusedLocationClient.removeLocationUpdates(myLocationCallback);
 
     }
 }
+
