@@ -52,6 +52,7 @@ public class ResultPage extends AppCompatActivity {
 
     final int GOING_TO_GALLERY = 5;
     ImageView pictureZone ;
+    final String[] labels = {"Arts", "Cox", "McKnight", "Rainbow"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -170,7 +171,6 @@ public class ResultPage extends AppCompatActivity {
                                 Log.i("SUCCESS", "4");
                                 float[][] output = result.getOutput(0);
                                 float[] probabilities = output[0];
-                                String[] labels = {"Arts", "Cox", "McKnight", "Rainbow"};
 
                                 for (int i = 0; i < probabilities.length; i++) {
                                     try {
@@ -190,7 +190,7 @@ public class ResultPage extends AppCompatActivity {
 
 
                                 }
-                                getInfo(predictionProb(probabilities, labels));
+                                chooseDialog(probabilities);
 
                             }
                         })
@@ -206,7 +206,22 @@ public class ResultPage extends AppCompatActivity {
 
     }
 
-    private String predictionProb(float[] probabilities, String[] labels) {
+    private void chooseDialog(float [] probabilities) {
+        int maxProbBuildingIndex = predictionProb(probabilities);
+        float maxProb = probabilities[maxProbBuildingIndex];
+
+        if(maxProb < 0.7) {
+            backgroundDialogue(this);
+            return;
+        }
+
+        else {
+            getInfo(labels[maxProbBuildingIndex]);
+        }
+
+    }
+
+    private int predictionProb(float[] probabilities) {
         float max = 0;
         int index = 100;
         int length = probabilities.length;
@@ -218,7 +233,7 @@ public class ResultPage extends AppCompatActivity {
         }
         //String resultForAndroid=String.format("%s: %1.4f",labels[index] ,max);
         //return resultForAndroid;
-        return labels[index];
+        return index;
     }
 
     public void getInfo(String label) {
@@ -257,7 +272,6 @@ public class ResultPage extends AppCompatActivity {
         TextView address = dialog.findViewById(R.id.address_holder);
         Button exit = dialog.findViewById(R.id.exit_button);
         Button home = dialog.findViewById(R.id.home_button);
-        exit.setText("Back to Gallery");
 
 
         name.setText(Name);
@@ -316,6 +330,52 @@ public class ResultPage extends AppCompatActivity {
         });
 
     }
+
+
+    public void backgroundDialogue(Activity activity) {
+        final Dialog dialog2 = new Dialog(activity);
+        dialog2.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog2.setCancelable(false);
+        dialog2.setContentView(R.layout.background_dialogue2);
+
+        //Setting the textView up
+
+        Button exit2 = dialog2.findViewById(R.id.exit_button2);
+        Button home2 = dialog2.findViewById(R.id.home_button2);
+
+        //Stick it on the bottem and resume the darkened screen
+        Window window = dialog2.getWindow();
+        WindowManager.LayoutParams wlp = window.getAttributes();
+
+        wlp.gravity = Gravity.BOTTOM;
+        wlp.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
+        wlp.windowAnimations = R.style.DialogAnimation_2;
+        wlp.width = WindowManager.LayoutParams.MATCH_PARENT;
+        window.setAttributes(wlp);
+
+        //Showing the dialog
+        dialog2.show();
+
+        //Setting up the button to exit the dilog
+        exit2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                dialog2.dismiss();
+                goToGallery();
+            }
+        });
+
+        home2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                goHome();
+            }
+        });
+
+    }
+
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {

@@ -153,23 +153,25 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     }
 
     private void getNearestBuilding(float [] probabilities, double[] distances, List<DocumentSnapshot> documents) {
-        double min = distances[0];
+        double minDistance = distances[0];
         int minIndex = 0;
         for(int index = 1; index < distances.length; index++) {
-            if(distances[index] < min) {
-                min = distances[index];
+            if(distances[index] < minDistance) {
+                minDistance = distances[index];
                 minIndex = index;
             }
         }
 
-        if(min > 100.0) {
+        probabilities[minIndex] += 0.2;
+        int maxProbBuildingIndex = predictionProb(probabilities);
+
+        if( minDistance > 100.0 || (probabilities[maxProbBuildingIndex] < 0.8) ) {
             backgroundDialogue(this);
             return;
         }
 
         else {
-            probabilities[minIndex] += 0.2;
-            getInfo(documents.get(predictionProb(probabilities)));
+            getInfo(documents.get(maxProbBuildingIndex));
         }
 
     }
