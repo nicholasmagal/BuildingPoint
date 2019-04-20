@@ -588,6 +588,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setCancelable(false);
         dialog.setContentView(R.layout.layout_dialog);
+        dialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation_2;
 
         //Setting the textView up
         TextView name = dialog.findViewById(R.id.name_holder);

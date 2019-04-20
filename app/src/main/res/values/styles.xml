@@ -9,4 +9,9 @@
 
     </style>
 
+    <style name="DialogAnimation_2">
+        <item name="android:windowEnterAnimation">@anim/slide_up</item>
+        <item name="android:windowExitAnimation">@anim/slide_bottem</item>
+    </style>
+
 </resources>
