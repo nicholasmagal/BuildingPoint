@@ -337,8 +337,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         }
     }
 
-
-
     private void openCamera() {
         int cameraID = getId();
 
@@ -588,7 +586,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setCancelable(false);
         dialog.setContentView(R.layout.layout_dialog);
-        dialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation_2;
 
         //Setting the textView up
         TextView name = dialog.findViewById(R.id.name_holder);
@@ -626,26 +623,13 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
         wlp.gravity = Gravity.BOTTOM;
         wlp.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
+        wlp.windowAnimations = R.style.DialogAnimation_2;
+        wlp.width = WindowManager.LayoutParams.MATCH_PARENT;
         window.setAttributes(wlp);
-
-        //Setting the dialog to be the entire horiztal screen
-
-        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
-        lp.copyFrom(dialog.getWindow().getAttributes());
-        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
-
 
         //Showing the dialog
         dialog.show();
         activitySwitchGuard=true;
-
-        //Setting the backgroundcolor
-        //int color=ContextCompat.getColor(ViewDialog.this,R.color.myOrange);
-        // dialog.getWindow().setBackgroundDrawableResoure(color);
-        //setting the horizontal portion
-        dialog.getWindow().setAttributes(lp);
-        //Click handler for exiting
-
 
         //Setting up the button to exit the dilog
         exit.setOnClickListener(new View.OnClickListener() {
@@ -679,25 +663,13 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
         wlp.gravity = Gravity.BOTTOM;
         wlp.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
+        wlp.windowAnimations = R.style.DialogAnimation_2;
+        wlp.width = WindowManager.LayoutParams.MATCH_PARENT;
         window.setAttributes(wlp);
-
-        //Setting the dialog to be the entire horiztal screen
-
-        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
-        lp.copyFrom(dialog2.getWindow().getAttributes());
-        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
 
         //Showing the dialog
         dialog2.show();
         activitySwitchGuard=true;
-
-        //Setting the backgroundcolor
-        //int color=ContextCompat.getColor(ViewDialog.this,R.color.myOrange);
-        // dialog.getWindow().setBackgroundDrawableResoure(color);
-        //setting the horizontal portion
-        dialog2.getWindow().setAttributes(lp);
-        //Click handler for exiting
-
 
         //Setting up the button to exit the dilog
         exit2.setOnClickListener(new View.OnClickListener() {

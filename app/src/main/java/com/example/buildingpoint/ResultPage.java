@@ -84,33 +84,6 @@ public class ResultPage extends AppCompatActivity {
         return pictureMap;
     }
 
-    /*
-    //Creates option at the action bar
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater;
-
-        inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu_camera, menu);
-
-
-        return (true);
-    }
-
-
-    //Options for selecting the menu that calls the method to bring app back home
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.live_id:
-                goHome();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-
-    }
-    */
-
     //Action to bring activity back home
     public void goHome() {
         Intent homeIntent = new Intent();
@@ -316,25 +289,12 @@ public class ResultPage extends AppCompatActivity {
 
         wlp.gravity = Gravity.BOTTOM;
         wlp.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
+        wlp.windowAnimations = R.style.DialogAnimation_2;
+        wlp.width = WindowManager.LayoutParams.MATCH_PARENT;
         window.setAttributes(wlp);
-
-        //Setting the dialog to be the entire horiztal screen
-
-        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
-        lp.copyFrom(dialog.getWindow().getAttributes());
-        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
-
 
         //Showing the dialog
         dialog.show();
-
-        //Setting the backgroundcolor
-        //int color=ContextCompat.getColor(ViewDialog.this,R.color.myOrange);
-        // dialog.getWindow().setBackgroundDrawableResoure(color);
-        //setting the horizontal portion
-        dialog.getWindow().setAttributes(lp);
-        //Click handler for exiting
-
 
         //Setting up the button to exit the dilog
         exit.setOnClickListener(new View.OnClickListener() {
