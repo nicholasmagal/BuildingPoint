@@ -51,6 +51,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.ml.common.FirebaseMLException;
 import com.google.firebase.ml.common.modeldownload.FirebaseLocalModel;
 import com.google.firebase.ml.common.modeldownload.FirebaseModelDownloadConditions;
@@ -67,6 +68,7 @@ import com.google.type.LatLng;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements TextureView.SurfaceTextureListener, Camera.PictureCallback {
 
@@ -86,10 +88,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     FirebaseFirestore db;
     private FusedLocationProviderClient fusedLocationClient;
 
-
-
-
-
+    final String[] labels = {"Arts", "Cox", "McKnight", "Rainbow"};
 
 
     @Override
@@ -107,67 +106,21 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             WelcomeMessage(mTextureView);
             checkFirstTime = false;
         }
-        //locationRequest();
 
     }
 
-
-    private void newLocationRequest(final String label_geo) {
+    private void getLocation(final float [] p) {
         try {
             fusedLocationClient.getLastLocation()
                     .addOnSuccessListener(this, new OnSuccessListener<Location>() {
                         @Override
-                        public void onSuccess(Location location) {
+                        public void onSuccess(final Location location) {
                             // Got last known location. In some rare situations this can be null.
 
                             if (location != null) {
-                                final double longitude = location.getLongitude();
-                                final double latitude = location.getLatitude();
-
-                                /*
-                                String currentText = " ";
-                                currentText += String.format("%.2f %s",latitude,
-                                        latitude >= 0.0?"N":"S") + "   ";
-                                currentText += String.format("%.2f %s",longitude,
-                                        longitude >= 0.0?"E":"W")  + "   ";
-
-                                Toast.makeText(MainActivity.this," "+currentText,Toast.LENGTH_LONG).show();
-                                */
-
-                                Task<DocumentSnapshot> tds2 = db.collection("building").document(label_geo).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                        DocumentSnapshot ds2 = task.getResult();
-
-                                        GeoPoint bPoint = ds2.getGeoPoint("location");
-                                        GeoPoint uPoint = new GeoPoint(latitude,longitude);
-
-                                        Location bLoc = new Location("");
-                                        bLoc.setLatitude(bPoint.getLatitude());
-                                        bLoc.setLongitude(bPoint.getLongitude());
-
-                                        Location uLoc = new Location("");
-                                        uLoc.setLatitude(uPoint.getLatitude());
-                                        uLoc.setLongitude(uPoint.getLongitude());
-
-                                        double distanceInMeters = uLoc.distanceTo(bLoc);
-                                        handleDistance(distanceInMeters, label_geo);
-
-                                    }
-                                });
-
-
-
-
-
-
-
-
+                                getNearestBuilding(p,location);
                             }
                         }
-
-
-
                     });
         }
         catch (SecurityException e) {
@@ -175,13 +128,50 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         }
     }
 
+    private void getNearestBuilding(final float [] p, final Location uLoc) {
+        Task<QuerySnapshot> qs = db.collection("building").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                QuerySnapshot q = task.getResult();
+                helper(q.getDocuments(),p,uLoc);
+            }
+        });
+    }
 
-    private void handleDistance(Double dis, String dialogLabel){
-        if(dis > 100.0) {
-            backgroundDialogue(this);
-        } else {
-            getInfo(dialogLabel);
+    private void helper(List<DocumentSnapshot> d, float [] p, Location uLoc) {
+        double [] distances = new double[d.size()];
+        for(int index = 0; index < d.size(); index++) {
+            GeoPoint bPoint = d.get(index).getGeoPoint("location");
+
+            Location bLoc = new Location("");
+            bLoc.setLatitude(bPoint.getLatitude());
+            bLoc.setLongitude(bPoint.getLongitude());
+
+            distances[index] = uLoc.distanceTo(bLoc);
         }
+        helper2(p,distances,d);
+    }
+
+    private void helper2(float [] p, double[] dist, List<DocumentSnapshot> d) {
+        double min = dist[0];
+        int minIndex = 0;
+        for(int index = 1; index < dist.length; index++) {
+            if(dist[index] < min) {
+                min = dist[index];
+                minIndex = index;
+            }
+        }
+
+        if(min > 100.0) {
+            backgroundDialogue(this);
+            return;
+        }
+
+        else {
+            p[minIndex] += 0.2;
+            getInfo(d.get(predictionProb(p)));
+        }
+
     }
 
     public void createTexture() {
@@ -417,7 +407,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
 
         //Getting the model from FireBase
-
+        /*
         FirebaseModelDownloadConditions.Builder conditionsBuilder =
                 new FirebaseModelDownloadConditions.Builder().requireWifi();
 
@@ -431,6 +421,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                 .build();
         FirebaseModelManager.getInstance().registerRemoteModel(cloudSource);
         Log.i("SUCCESS", "0");
+        */
 
 
         //Creating the interperter from the model
@@ -481,7 +472,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                                 Log.i("SUCCESS", "4");
                                 float[][] output = result.getOutput(0);
                                 float[] probabilities = output[0];
-                                String[] labels = {"Arts", "Cox", "McKnight", "Rainbow"};
 
                                 for (int i = 0; i < probabilities.length; i++) {
                                     try {
@@ -496,12 +486,10 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                                     } catch (Exception e) {
                                         Log.i("MLKIT", "FAIL");
                                     }
-                                    //String resultForDisplay=predictionProb(probabilities,labels);
-                                    //Toast.makeText(getApplicationContext(), resultForDisplay, Toast.LENGTH_SHORT).show();
-
 
                                 }
-                                newLocationRequest(predictionProb(probabilities, labels));
+                                getLocation(probabilities);
+                                //newLocationRequest(predictionProb(probabilities, labels));
                                 //getInfo(predictionProb(probabilities, labels));
 
                             }
@@ -518,7 +506,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
     }
 
-    private String predictionProb(float[] probabilities, String[] labels) {
+    private int predictionProb(float[] probabilities) {
         float max = 0;
         int index = 100;
         int length = probabilities.length;
@@ -530,7 +518,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         }
         //String resultForAndroid=String.format("%s: %1.4f",labels[index] ,max);
         //return resultForAndroid;
-        return labels[index];
+        return index;
     }
 
     private void goToGallery() {
@@ -540,26 +528,17 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         startActivityForResult(galleryIntent, ACTIVITY_SELECT_PICTURE);
     }
 
-    public void getInfo(String label) {
-        //Task<DocumentSnapshot> tds = db.collection("buildings").document(label).get();
-        Task<DocumentSnapshot> tds = db.collection("building").document(label).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                DocumentSnapshot ds = task.getResult();
-                Object bName = ds.get("name");
-                Object bDepartment = ds.get("department");
-                Object bAddress = ds.get("address");
-                String resultForDisplay = bName.toString() + "\n" + bDepartment.toString() + "\n" + bAddress.toString();
-                //Toast.makeText(myContext, resultForDisplay, Toast.LENGTH_SHORT).show();
-                String Name = bName.toString();
-                String Department = bDepartment.toString();
-                String Address = bAddress.toString();
+    public void getInfo(DocumentSnapshot ds) {
+        Object bName = ds.get("name");
+        Object bDepartment = ds.get("department");
+        Object bAddress = ds.get("address");
+        String resultForDisplay = bName.toString() + "\n" + bDepartment.toString() + "\n" + bAddress.toString();
 
-                //openDialog(Name, Department, Address);
+        String Name = bName.toString();
+        String Department = bDepartment.toString();
+        String Address = bAddress.toString();
 
-                showDialog(MainActivity.this, Name,Department,Address);
-            }
-        });
+        showDialog(MainActivity.this, Name,Department,Address);
     }
 
     public void WelcomeMessage(View view) {
@@ -732,11 +711,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         });
 
     }
-
-
-
-
-
 
     @Override
     protected void onDestroy() {
