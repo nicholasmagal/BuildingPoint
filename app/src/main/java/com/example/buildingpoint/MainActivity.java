@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
     }
 
-    private void getLocation(final float [] p) {
+    private void getLocation(final float [] probabilities) {
         try {
             fusedLocationClient.getLastLocation()
                     .addOnSuccessListener(this, new OnSuccessListener<Location>() {
@@ -118,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                             // Got last known location. In some rare situations this can be null.
 
                             if (location != null) {
-                                getNearestBuilding(p,location);
+                                getBuildings(probabilities,location);
                             }
                         }
                     });
@@ -128,20 +128,20 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         }
     }
 
-    private void getNearestBuilding(final float [] p, final Location uLoc) {
+    private void getBuildings(final float [] probabilities, final Location uLoc) {
         Task<QuerySnapshot> qs = db.collection("building").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 QuerySnapshot q = task.getResult();
-                helper(q.getDocuments(),p,uLoc);
+                getDistanceToBuildings(q.getDocuments(),probabilities,uLoc);
             }
         });
     }
 
-    private void helper(List<DocumentSnapshot> d, float [] p, Location uLoc) {
-        double [] distances = new double[d.size()];
-        for(int index = 0; index < d.size(); index++) {
-            GeoPoint bPoint = d.get(index).getGeoPoint("location");
+    private void getDistanceToBuildings(List<DocumentSnapshot> documents, float [] probabilities, Location uLoc) {
+        double [] distances = new double[documents.size()];
+        for(int index = 0; index < documents.size(); index++) {
+            GeoPoint bPoint = documents.get(index).getGeoPoint("location");
 
             Location bLoc = new Location("");
             bLoc.setLatitude(bPoint.getLatitude());
@@ -149,15 +149,15 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
             distances[index] = uLoc.distanceTo(bLoc);
         }
-        helper2(p,distances,d);
+        getNearestBuilding(probabilities,distances,documents);
     }
 
-    private void helper2(float [] p, double[] dist, List<DocumentSnapshot> d) {
-        double min = dist[0];
+    private void getNearestBuilding(float [] probabilities, double[] distances, List<DocumentSnapshot> documents) {
+        double min = distances[0];
         int minIndex = 0;
-        for(int index = 1; index < dist.length; index++) {
-            if(dist[index] < min) {
-                min = dist[index];
+        for(int index = 1; index < distances.length; index++) {
+            if(distances[index] < min) {
+                min = distances[index];
                 minIndex = index;
             }
         }
@@ -168,8 +168,8 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         }
 
         else {
-            p[minIndex] += 0.2;
-            getInfo(d.get(predictionProb(p)));
+            probabilities[minIndex] += 0.2;
+            getInfo(documents.get(predictionProb(probabilities)));
         }
 
     }
