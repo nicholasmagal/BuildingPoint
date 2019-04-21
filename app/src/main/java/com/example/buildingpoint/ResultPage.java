@@ -50,7 +50,7 @@ import java.io.InputStreamReader;
 
 public class ResultPage extends AppCompatActivity {
 
-    final int GOING_TO_GALLERY = 5;
+    final int GOING_TO_GALLERY = 1;
     ImageView pictureZone ;
     final String[] labels = {"Arts", "Cox", "McKnight", "Rainbow"};
 

@@ -74,13 +74,12 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
     final int ACTIVITY_SELECT_PICTURE = 1;
     final int ACTIVITY_RESULT = 2;
-    final int MY_PERMISSIONS_REQUEST_LOCATION = 3;
+    final int REQUEST_PERMISSIONS = 3;
     //Camera Stuff
     private Camera mCamera;
     private TextureView mTextureView;
     private boolean cameraInUse;
     private boolean canTakePhoto;
-    static final int REQUEST_IMAGE_CAPTURE = 1;
     String counter;
     boolean activitySwitchGuard;
     static boolean checkFirstTime = true;
@@ -205,7 +204,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                 Toast.makeText(this, "Camera permission is needed to show the camera preview.", Toast.LENGTH_SHORT).show();
             }
             */
-            requestPermissions(new String[]{Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_IMAGE_CAPTURE);
+            requestPermissions(new String[]{Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_PERMISSIONS);
 
 
             checkPermission();
