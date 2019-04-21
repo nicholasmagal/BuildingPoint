@@ -50,27 +50,33 @@ import java.io.InputStreamReader;
 
 public class ResultPage extends AppCompatActivity {
 
+    //Integers for switching activities
     final int GOING_TO_GALLERY = 1;
-    ImageView pictureZone ;
+
+    //Preview of the selected photo
+    ImageView pictureZone;
+
+    //Reference to Firestore database
+    FirebaseFirestore db;
+
+    //Building labels
     final String[] labels = {"Arts", "Cox", "McKnight", "Rainbow"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_result_page);
-        pictureZone= findViewById(R.id.preview_photo);
+        db = FirebaseFirestore.getInstance(); //getting an instance of the Firestore database
+        setContentView(R.layout.activity_result_page); //setting the layout
+        pictureZone = findViewById(R.id.preview_photo); //grabbing ImageView from xml
         try {
-            Bitmap selectedPhoto = setImage();
-            getTFModel(selectedPhoto);
+            Bitmap selectedPhoto = setImage(); //convert selected photo to bitmap
+            getTFModel(selectedPhoto); //pass photo to ML model
         } catch (Exception e) {
-            Log.i("PIC", "could not be set");
+
         }
-
-
     }
 
-
-    //Sets the image of the activity
+    //Sets the image of the activity, returns image in a bitmap
     public Bitmap setImage() throws Exception {
         Bitmap pictureMap;
         pictureZone = findViewById(R.id.preview_photo);
@@ -85,69 +91,30 @@ public class ResultPage extends AppCompatActivity {
         return pictureMap;
     }
 
-    //Action to bring activity back home
-    public void goHome() {
-        Intent homeIntent = new Intent();
-        homeIntent.setClass(this, MainActivity.class);
-        startActivityForResult(homeIntent, 3);
-
-    }
-
     public void getTFModel(Bitmap bitmap) throws FirebaseMLException {
-
-        Log.i("SUCCESS", "-1");
-
-        //Getting the TensorFlowModel from assets folder
-
+        //Getting the TensorFlow Model from assets folder
         FirebaseLocalModel localSource =
-                new FirebaseLocalModel.Builder("my_local_model")  // Assign a name to this model
-                        .setAssetFilePath("model.tflite")
-                        .build();
-        FirebaseModelManager.getInstance().registerLocalModel(localSource);
-
-
-        //Getting the model from FireBase
-
-        FirebaseModelDownloadConditions.Builder conditionsBuilder =
-                new FirebaseModelDownloadConditions.Builder().requireWifi();
-
-        FirebaseModelDownloadConditions conditions = conditionsBuilder.build();
-
-
-        FirebaseRemoteModel cloudSource = new FirebaseRemoteModel.Builder("building-detector")
-                .enableModelUpdates(true)
-                .setInitialDownloadConditions(conditions)
-                .setUpdatesDownloadConditions(conditions)
-                .build();
-        FirebaseModelManager.getInstance().registerRemoteModel(cloudSource);
-        Log.i("SUCCESS", "0");
-
-
-        //Creating the interperter from the model
+                new FirebaseLocalModel.Builder("my_local_model")  // Assign a name to this model in the program
+                        .setAssetFilePath("model.tflite") //this is the name of the model in the assets folder
+                        .build(); //building the model
+        FirebaseModelManager.getInstance().registerLocalModel(localSource); //registering the local model with the FirebaseModelManager
 
         FirebaseModelOptions options = new FirebaseModelOptions.Builder()
-                .setLocalModelName("my_local_model").build();
+                .setLocalModelName("my_local_model").build(); //options associated with the model
         FirebaseModelInterpreter firebaseInterpreter =
-                FirebaseModelInterpreter.getInstance(options);
-        Log.i("SUCCESS", "0.5");
+                FirebaseModelInterpreter.getInstance(options); //creating an interpreter for the model, given the options
 
-        //Process
-
+        //Specifying the inputs and outputs of model
         FirebaseModelInputOutputOptions inputOutputOptions =
                 new FirebaseModelInputOutputOptions.Builder()
-                        .setInputFormat(0, FirebaseModelDataType.FLOAT32, new int[]{1, 224, 224, 3})
-                        .setOutputFormat(0, FirebaseModelDataType.FLOAT32, new int[]{1, 4})
-                        .build();
+                        .setInputFormat(0, FirebaseModelDataType.FLOAT32, new int[]{1, 224, 224, 3}) //input is 1 image, 224x224 pixels, with 3 color channels (RBG)
+                        .setOutputFormat(0, FirebaseModelDataType.FLOAT32, new int[]{1, 4}) //output is 1 array of 4 probabilities
+                        .build(); //building inputs/outputs
 
-
-        Log.i("SUCCESS", "1");
-
-
-        //Performing Inference on Input data
-
-        bitmap = Bitmap.createScaledBitmap(bitmap, 224, 224, true);
-        int batchNum = 0;
-        float[][][][] input = new float[1][224][224][3];
+        //Performing inference on the input data
+        bitmap = Bitmap.createScaledBitmap(bitmap, 224, 224, true); //this is the bitmap of the photo we took
+        int batchNum = 0; //not feeding our model in batches but rather one image at a time
+        float[][][][] input = new float[1][224][224][3]; //creating input for the photo we took
         for (int x = 0; x < 224; x++) {
             for (int y = 0; y < 224; y++) {
                 int pixel = bitmap.getPixel(x, y);
@@ -155,72 +122,54 @@ public class ResultPage extends AppCompatActivity {
                 input[batchNum][x][y][0] = Color.red(pixel) / 255.0f;
                 input[batchNum][x][y][1] = Color.green(pixel) / 255.0f;
                 input[batchNum][x][y][2] = Color.blue(pixel) / 255.0f;
-            }
+            } //the for loop is normalizing all the pixel values of our photo between 0 and 1 (as we did when training our model)
         }
-        Log.i("SUCCESS", "2");
-        //Creating a input model
+
+        //Creating the input part of model
         FirebaseModelInputs inputs = new FirebaseModelInputs.Builder()
                 .add(input)  // add() as many input arrays as your model requires
-                .build();
+                .build(); //putting our input image in place for our model
 
-        firebaseInterpreter.run(inputs, inputOutputOptions)
+        //Running the model
+        firebaseInterpreter.run(inputs, inputOutputOptions) //given the input & options, our model will now run and give us an output
                 .addOnSuccessListener(
                         new OnSuccessListener<FirebaseModelOutputs>() {
                             @Override
-                            public void onSuccess(FirebaseModelOutputs result) {
-                                Log.i("SUCCESS", "4");
-                                float[][] output = result.getOutput(0);
-                                float[] probabilities = output[0];
-
+                            public void onSuccess(FirebaseModelOutputs result) { //on the successful running of our model ...
+                                float[][] output = result.getOutput(0); //we get our output from the model
+                                float[] probabilities = output[0]; //store our output in an array
+                                //Log message to give us probabilities in the terminal
                                 for (int i = 0; i < probabilities.length; i++) {
-                                    try {
-                                        BufferedReader reader = new BufferedReader(
-                                                new InputStreamReader(getAssets().open("train.txt")));
-                                        String label = reader.readLine();
-
-
-                                        Log.i("MLKit", String.format("%s: %1.4f", labels[i], probabilities[i]));
-
-
-                                    } catch (Exception e) {
-                                        Log.i("MLKIT", "FAIL");
-                                    }
-                                    //String resultForDisplay=predictionProb(probabilities,labels);
-                                    //Toast.makeText(getApplicationContext(), resultForDisplay, Toast.LENGTH_SHORT).show();
-
-
+                                    Log.i("MLKit", String.format("%s: %1.4f", labels[i], probabilities[i]));
                                 }
+                                //We will now pass the probabilities from the ML model to a new function which will display either a background dialog if confidence is too low, or dialog of most probable building
                                 chooseDialog(probabilities);
 
                             }
                         })
                 .addOnFailureListener(
-                        new OnFailureListener() {
+                        new OnFailureListener() { //on our model failing to run, we log a failure message (should never happen given that the model is local)
                             @Override
                             public void onFailure(@NonNull Exception e) {
                                 Log.i("ERROR", " FAILURE AT THE END");
                             }
                         });
-        Log.i("SUCCESS", "3");
-
-
     }
 
-    private void chooseDialog(float [] probabilities) {
-        int maxProbBuildingIndex = predictionProb(probabilities);
-        float maxProb = probabilities[maxProbBuildingIndex];
+    //choose which dialog to display depending on returned probabilities from ML model
+    private void chooseDialog(float[] probabilities) {
+        int maxProbBuildingIndex = predictionProb(probabilities); //get index of most probable building
+        float maxProb = probabilities[maxProbBuildingIndex]; //get probability of most probable building
 
-        if(maxProb < 0.7) {
+        if (maxProb < 0.7) { //if probability(confidence) is less than 0.7, show background noise dialog and return from execution
             backgroundDialogue(this);
             return;
-        }
-
-        else {
+        } else { //else, show dialog of most probable building
             getInfo(labels[maxProbBuildingIndex]);
         }
-
     }
 
+    //returns index of building with highest probability
     private int predictionProb(float[] probabilities) {
         float max = 0;
         int index = 100;
@@ -231,61 +180,58 @@ public class ResultPage extends AppCompatActivity {
                 index = i;
             }
         }
-        //String resultForAndroid=String.format("%s: %1.4f",labels[index] ,max);
-        //return resultForAndroid;
         return index;
     }
 
+    //given document of building, gets all the building's info (name,dept,address,etc.) and pass info to a function which will create dialog
     public void getInfo(String label) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        //Task<DocumentSnapshot> tds = db.collection("buildings").document(label).get();
         Task<DocumentSnapshot> tds = db.collection("building").document(label).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 DocumentSnapshot ds = task.getResult();
+
                 Object bName = ds.get("name");
                 Object bDepartment = ds.get("department");
                 Object bAddress = ds.get("address");
-                String resultForDisplay = bName.toString() + "\n" + bDepartment.toString() + "\n" + bAddress.toString();
-                //Toast.makeText(myContext, resultForDisplay, Toast.LENGTH_SHORT).show();
+
                 String Name = bName.toString();
                 String Department = bDepartment.toString();
                 String Address = bAddress.toString();
-
-                //openDialog(Name, Department, Address);
 
                 showDialog(ResultPage.this, Name, Department, Address);
             }
         });
     }
 
+    //creating dialog given information of classified building
     public void showDialog(Activity activity, String Name, String Department, final String Address) {
-        Log.i("DialogC", "It is done");
-        final Dialog dialog = new Dialog(activity);
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setCancelable(false);
-        dialog.setContentView(R.layout.layout_dialog2);
+        final Dialog dialog = new Dialog(activity); //create a new dialog
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE); //no title
+        dialog.setContentView(R.layout.layout_dialog2); //set the layout of the dialog (grabbing from xml)
 
-        //Setting the textView up
-        TextView name = dialog.findViewById(R.id.name_holder);
-        TextView dep = dialog.findViewById(R.id.department_holder);
-        TextView address = dialog.findViewById(R.id.address_holder);
-        Button exit = dialog.findViewById(R.id.exit_button);
-        Button home = dialog.findViewById(R.id.home_button);
+        //Setting the TextView up
+        TextView name = dialog.findViewById(R.id.name_holder); //grabbing name element from xml
+        TextView dep = dialog.findViewById(R.id.department_holder); //grabbing department element from xml
+        TextView address = dialog.findViewById(R.id.address_holder); //grabbing address element from xml
+        Button exit = dialog.findViewById(R.id.exit_button); //grabbing exit element from xml
+        Button home = dialog.findViewById(R.id.home_button); //grabbing home element from xml
 
+        name.setText(Name); //set the name of the building
+        name.setTextColor(Color.WHITE); //set color to white
 
-        name.setText(Name);
-        name.setTextColor(Color.WHITE);
-        dep.setText(Department);
-        dep.setTextColor(Color.WHITE);
-        address.setText(Address);
-        address.setClickable(true);
-        address.setTextColor(Color.YELLOW);
+        dep.setText(Department); //set the department of the building
+        dep.setTextColor(Color.WHITE); //set color to white
 
+        address.setText(Address); //set the address of the building
+        address.setClickable(true); //allow to click (will open google maps and query using address)
+        address.setTextColor(Color.YELLOW); //set color to yellow
+
+        //underline the address to emphasize that it is clickable (like a link)
         SpannableString content = new SpannableString(Address);
         content.setSpan(new UnderlineSpan(), 0, content.length(), 0);
         address.setText(content);
 
+        //when you click on the address, a new GoogleMap intent is started, which will open Google Maps and query maps with the address
         address.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -296,87 +242,86 @@ public class ResultPage extends AppCompatActivity {
             }
         });
 
+        Window window = dialog.getWindow(); //get window of dialog
+        WindowManager.LayoutParams wlp = window.getAttributes(); //grab current attributes of window
 
-        //Stick it on the bottem and resume the darkened screen
-        Window window = dialog.getWindow();
-        WindowManager.LayoutParams wlp = window.getAttributes();
+        //overwrite some attributes ...
+        wlp.gravity = Gravity.BOTTOM; //stick dialog on the bottom
+        wlp.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND; //remove darkened screen
+        wlp.windowAnimations = R.style.DialogAnimation_2; //add animation to the dialog window (slide up upon arrival & slide down upon exit)
+        wlp.width = WindowManager.LayoutParams.MATCH_PARENT; //setup width of the dialog to match parent
+        window.setAttributes(wlp); //write back all the attributes to the dialog window
 
-        wlp.gravity = Gravity.BOTTOM;
-        wlp.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
-        wlp.windowAnimations = R.style.DialogAnimation_2;
-        wlp.width = WindowManager.LayoutParams.MATCH_PARENT;
-        window.setAttributes(wlp);
+        dialog.show(); //showing the dialog
 
-        //Showing the dialog
-        dialog.show();
-
-        //Setting up the button to exit the dilog
+        //setting up the button to exit the dialog
         exit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                dialog.dismiss();
-                goToGallery();
-
-
+                //upon exiting the dialog ...
+                dialog.dismiss(); //dismiss the dialog
+                goToGallery(); //go to gallery
             }
         });
 
+        //setting up button to go back to camera
         home.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                goHome();
+                goHome(); //go back to camera
             }
         });
-
     }
 
 
     public void backgroundDialogue(Activity activity) {
-        final Dialog dialog2 = new Dialog(activity);
-        dialog2.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog2.setCancelable(false);
-        dialog2.setContentView(R.layout.background_dialogue2);
+        final Dialog dialog2 = new Dialog(activity); //create a new dialog
+        dialog2.requestWindowFeature(Window.FEATURE_NO_TITLE); //no title
+        dialog2.setContentView(R.layout.background_dialogue2); //set the layout of the dialog (grabbing from xml)
 
-        //Setting the textView up
+        Button exit2 = dialog2.findViewById(R.id.exit_button2); //grabbing exit element from xml
+        Button home2 = dialog2.findViewById(R.id.home_button2); //grabbing home element from xml
 
-        Button exit2 = dialog2.findViewById(R.id.exit_button2);
-        Button home2 = dialog2.findViewById(R.id.home_button2);
+        Window window = dialog2.getWindow(); //get window of dialog
+        WindowManager.LayoutParams wlp = window.getAttributes(); //grab current attributes of window
 
-        //Stick it on the bottem and resume the darkened screen
-        Window window = dialog2.getWindow();
-        WindowManager.LayoutParams wlp = window.getAttributes();
+        //overwrite some attributes ...
+        wlp.gravity = Gravity.BOTTOM; //stick dialog on the bottom
+        wlp.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND; //remove darkened screen
+        wlp.windowAnimations = R.style.DialogAnimation_2; //add animation to the dialog window (slide up upon arrival & slide down upon exit)
+        wlp.width = WindowManager.LayoutParams.MATCH_PARENT; //setup width of the dialog to match parent
+        window.setAttributes(wlp); //write back all the attributes to the dialog window
 
-        wlp.gravity = Gravity.BOTTOM;
-        wlp.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
-        wlp.windowAnimations = R.style.DialogAnimation_2;
-        wlp.width = WindowManager.LayoutParams.MATCH_PARENT;
-        window.setAttributes(wlp);
+        dialog2.show(); //showing the dialog
 
-        //Showing the dialog
-        dialog2.show();
-
-        //Setting up the button to exit the dilog
+        //setting up the button to exit the dialog
         exit2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                dialog2.dismiss();
-                goToGallery();
+                //upon exiting the dialog ...
+                dialog2.dismiss(); //dismiss the dialog
+                goToGallery(); //go to gallery
             }
         });
 
+        //setting up button to go back to camera
         home2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                goHome();
+                goHome(); //go back to camera
             }
         });
-
     }
 
+    //change to gallery page
+    private void goToGallery() {
+        Intent galleryIntent;
+        galleryIntent = new Intent(Intent.ACTION_PICK,
+                android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI);
+        startActivityForResult(galleryIntent, GOING_TO_GALLERY);
+    }
 
-
+    //called when picture is selected after going back to gallery multiple times (after first time which is handled by onCreate)
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -386,17 +331,15 @@ public class ResultPage extends AppCompatActivity {
             case GOING_TO_GALLERY:
                 if (resultCode == Activity.RESULT_OK) {
                     selectedURI = data.getData();
-
                     try {
                         newSelectedPhoto = MediaStore.Images.Media.getBitmap(
                                 this.getContentResolver(), selectedURI);
                         pictureZone.setImageBitmap(newSelectedPhoto);
                         getTFModel(newSelectedPhoto);
                     } catch (Exception e) {
-                        Log.i("settingPhoto", "not working");
+
                     }
-                }
-                else {
+                } else {
                     goHome();
                 }
                 break;
@@ -406,11 +349,10 @@ public class ResultPage extends AppCompatActivity {
         }
     }
 
-    private void goToGallery() {
-        Intent galleryIntent;
-        galleryIntent = new Intent(Intent.ACTION_PICK,
-                android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI);
-        startActivityForResult(galleryIntent, GOING_TO_GALLERY);
+    //action to bring activity back home
+    public void goHome() {
+        Intent homeIntent = new Intent();
+        homeIntent.setClass(this, MainActivity.class);
+        startActivityForResult(homeIntent, 3);
     }
-
 }

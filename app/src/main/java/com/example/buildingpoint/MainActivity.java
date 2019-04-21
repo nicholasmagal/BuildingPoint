@@ -587,7 +587,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
     //called when returning from different activity
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        ImageView displayedPicture = findViewById(R.id.preview_photo);
         Uri selectedURI;
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {

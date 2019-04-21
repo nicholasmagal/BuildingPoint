@@ -11,10 +11,11 @@ public class Splash extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_splash);
-        ImageView mySplash=findViewById(R.id.splash_screen);
-        mySplash.setScaleType(ImageView.ScaleType.FIT_XY);
+        setContentView(R.layout.activity_splash); //set the layout of the splash screen (grabbing from xml)
+        ImageView mySplash=findViewById(R.id.splash_screen); //grabbing splash screen element from xml
+        mySplash.setScaleType(ImageView.ScaleType.FIT_XY); //fits background to the screen
 
+        //setting timer for activity to finish (3 seconds)
         new Handler().postDelayed(new Runnable() {
             @Override public void run() {
                 Intent myIntent = new Intent();
