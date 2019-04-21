@@ -100,7 +100,12 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     //Building labels
     final String[] labels = {"Arts", "Cox", "McKnight", "Rainbow"};
 
-
+    /**
+     * First method called in Android lifecycle.  This method initializes our global variables, and prompts a user to grant permissions
+     * for camera and location services.
+     *
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -119,7 +124,12 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         }
     }
 
-    //displays welcome message to user
+
+    /**
+     * This method will display the welcome message to the user.
+     *
+     * @param view The view where this will be displayed
+     */
     public void WelcomeMessage(View view) {
         String welcomemessage = "Please click on the screen to identify a building and see its information \n";
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
@@ -136,7 +146,10 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         alertDialog.show();
     }
 
-    //Asks for user permission regarding camera usage and location services
+
+    /**
+     * Asks for user permission regarding camera usage and location services.
+     */
     private void checkPermission() {
         if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED &&
                 ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -147,7 +160,9 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         }
     }
 
-    //done after onCreate
+    /**
+     * done after onCreate in Android LifeCycle.  Calls createTexture() and openCamera() which sets up camera and previewing of camera.
+     */
     @Override
     protected void onResume() {
         super.onResume();
@@ -157,6 +172,10 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         }
     }
 
+    /**
+     * Method for creating the TextureView.  TextureView is what we are using to host our camera. We also set up the click listener for the TextureView
+     * that allows us to capture a photo on click.
+     */
     public void createTexture() {
         //Let us prepare the Texture View
         mTextureView = new TextureView(this);
@@ -176,6 +195,10 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         });
     }
 
+    /**
+     * This method opens up the camera. This method opens up a camera and sets the orientation by calling setCameraDisplayOrientation
+     * which makes our camera upright.
+     */
     private void openCamera() {
         int cameraID = getId(); //first need to get cameraID
 
@@ -190,7 +213,12 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         cameraInUse = true; //now that camera is open, it is now in use
     }
 
-    //cycles through cameras until it finds ID of available back-facing camera, which we need
+
+    /**
+     * cycles through cameras until it finds ID of available back-facing camera, which we need.  This method is called by the openCamera method.
+     *
+     * @return the integer id of the back available camera
+     */
     public static int getId() {
         int cameraId = -1; //initial camera ID
         int numberOfCameras = Camera.getNumberOfCameras();
@@ -205,6 +233,14 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         return cameraId; //return ID of back-facing camera
     }
 
+    /**
+     * This method sets the camera orientation. Depending on the current rotation of the camera, the method will rotate the camera
+     * until it is in the upright position.
+     *
+     * @param activity This is the context where the camera is being opened up in
+     * @param cameraId This is the camera Id of the camera that we are fixing the orientation of
+     * @param camera   This is the instance of the camera that we are modifying
+     */
     //given the back-facing camera we want to use, this function will check the display and rotate it if necessary to make sure it is facing upright.
     public static void setCameraDisplayOrientation(Activity activity,
                                                    int cameraId, android.hardware.Camera camera) {
@@ -239,6 +275,13 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         camera.setDisplayOrientation(result);
     }
 
+    /**
+     * Invoked when a TextureView's SurfaceTexture is ready for use.
+     *
+     * @param surface The surface instance
+     * @param width   The width of the surface
+     * @param height  The height of the surface
+     */
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
         try {
             openCamera(); //when surface texture is available, open camera if not already open
@@ -249,18 +292,40 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         }
     }
 
+    /**
+     * Invoked when the SurfaceTexture's buffers size changed.
+     *
+     * @param surface The surface instance
+     * @param width   The width of the surface
+     * @param height  The height of the surface
+     */
     public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
         // Ignored, Camera does all the work for us
     }
 
+    /**
+     * Invoked when the specified SurfaceTexture is about to be destroyed.
+     *
+     * @param surface The surface instance
+     * @return a boolean indicating successful destroyed surface
+     */
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
         return true;
     }
 
+    /**
+     * Invoked when the specified SurfaceTexture is updated through SurfaceTexture#updateTexImage().
+     *
+     * @param surface The surface instance
+     */
     public void onSurfaceTextureUpdated(SurfaceTexture surface) {
         // Invoked every time there's a new Camera preview frame
     }
 
+    /**
+     * Called as part of the activity lifecycle when an activity is going into the background, but has not (yet) been killed. The counterpart to onResume.
+     * This method ensures that the camera has been closed so it is not open while the user is not in the app.
+     */
     @Override
     protected void onPause() {
         super.onPause();
@@ -270,18 +335,32 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         }
     }
 
+    /**
+     * Stops the camera from previewing and releases the camera.  Updates boolean value of cameraInUse.
+     */
     private void closeCamera() {
         mCamera.stopPreview(); //stop preview (dont need to see anymore)
         mCamera.release(); //release the camera
         cameraInUse = false; //camera is no longer in use
     }
 
+    /**
+     * Destroys the TextureView.
+     */
     private void releasePreview() {
         if (mTextureView != null) { //while there is a TextureView to destroy ...
             mTextureView.destroyDrawingCache(); //destroy it
         }
     }
 
+    /**
+     * Called when user takes a photo. Once user has taken photo, convert photo into a bitmap where it is then passed into
+     * the getTFModel, which is the TensorFlow machine learning model for image classification. This is the first method
+     * of our classification chain. The classification chain takes probabilities measured by CNN and refines them based on geolocation.
+     *
+     * @param data   this is photo data stored into a Byte array
+     * @param camera the current camera instance
+     */
     @Override
     public void onPictureTaken(byte[] data, Camera camera) { //when a picture is taken ...
         activitySwitchGuard = false; //cannot switch to gallery now because we will begin processing the image
@@ -295,6 +374,13 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         }
     }
 
+    /**
+     * The method that contains the CNN machine learning model. Sets up the model.  This method creates a list of probabilities
+     * of different classes.  These probabilities are passed into getLocation, the second method in the classification chain.
+     *
+     * @param bitmap the photo to be classified
+     * @throws FirebaseMLException if the classifier fails, will throw exception
+     */
     public void getTFModel(Bitmap bitmap) throws FirebaseMLException {
         //Getting the TensorFlow Model from assets folder
         FirebaseLocalModel localSource =
@@ -360,6 +446,12 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                         });
     }
 
+    /**
+     * Gets the current location of the user.  This is then passed into getBuildings, the third method in the classification
+     * chain.
+     *
+     * @param probabilities these are the probabilities of classes returned from the CNN machine learning model from getTFModel
+     */
     private void getLocation(final float[] probabilities) {
         try {
             fusedLocationClient.getLastLocation() //attempt to get the location of the user
@@ -379,6 +471,13 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         }
     }
 
+    /**
+     * Gets a QuerySnapshot of all buildings in FireStore database. Passes a list of documents which refer to each building to getDistanceToBuildings, the fourth
+     * classification chain method.
+     *
+     * @param probabilities these are the probabilities of classes returned from the CNN machine learning model from getTFModel
+     * @param uLoc User location captured from getLocation Method.
+     */
     private void getBuildings(final float[] probabilities, final Location uLoc) {
         Task<QuerySnapshot> qs = db.collection("building").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             //query database for the collection holding all the building documents(the collection holds each document, and each document holds the info of a particular building)
@@ -390,6 +489,14 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         });
     }
 
+    /**
+     * Calculates User's distance to all buildings stored in FireStore database. Stores these distances into a double array.  These distances are then passed into getNearestBuilding, the fifth
+     * classification chain method.
+     *
+     * @param documents     A list of document snapshots, each document refers to a particular building in the FireStore database
+     * @param probabilities These are the probabilities of classes returned from the CNN machine learning model from getTFModel
+     * @param uLoc          User location captured from getLocation Method.
+     */
     private void getDistanceToBuildings(List<DocumentSnapshot> documents, float[] probabilities, Location uLoc) {
         double[] distances = new double[documents.size()]; //create an array which will store the distance between the user and each building
         for (int index = 0; index < documents.size(); index++) { //for each building ...
@@ -404,6 +511,14 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         getNearestBuilding(probabilities, distances, documents); //pass to the next function, the probabilities from the ML model, distances between the user and each building, and list of documents for each building
     }
 
+    /**
+     * The last method in the classification chain. Finds the nearest building to User.  Enhances the probability by adding .2 to nearest building's probability. Chooses the max probability. If this probability
+     * is below .8 or if nearest building is more then 100 meters away, show background noise dialog, else display dialog of most probable building.
+     *
+     * @param probabilities These are the probabilities of classes returned from the CNN machine learning model from getTFModel
+     * @param distances     List of distances between the user and each building stored in FireStore
+     * @param documents     A list of document snapshots, each document refers to a particular building in the FireStore database
+     */
     private void getNearestBuilding(float[] probabilities, double[] distances, List<DocumentSnapshot> documents) {
         //will attempt to find closest building ...
         double minDistance = distances[0]; //closest building in terms of distance
@@ -427,7 +542,12 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         }
     }
 
-    //returns index of building with highest probability
+    /**
+     * Returns index of building with highest probability
+     *
+     * @param probabilities These are the probabilities of classes returned from the CNN machine learning model from getTFModel
+     * @return the index of the building with the highest probability
+     */
     private int predictionProb(float[] probabilities) {
         float max = 0;
         int index = 100;
@@ -441,7 +561,13 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         return index;
     }
 
-    //given document of building, gets all the building's info (name,dept,address,etc.) and pass info to a function which will create dialog
+
+    /**
+     * Given document of building, gets all the building's info (name,dept,address,etc.) and pass info to a
+     * function which will create dialog
+     *
+     * @param ds Document snapshot referring to a particular building from FireStore database
+     */
     public void getInfo(DocumentSnapshot ds) {
         Object bName = ds.get("name");
         Object bDepartment = ds.get("department");
@@ -455,7 +581,15 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         showDialog(MainActivity.this, Name, Department, Address);
     }
 
-    //creating dialog given information of classified building
+
+    /**
+     * Creating dialog given information of classified building. This will be called upon successful classification of image.
+     *
+     * @param activity   Which class we want the dialog to show in
+     * @param Name       Name of building to display
+     * @param Department Department name of building to display
+     * @param Address    Address of building to display
+     */
     public void showDialog(Activity activity, String Name, String Department, final String Address) {
         mTextureView.setClickable(false); //cannot click on TextureView (limited to clicking in dialog area)
 
@@ -520,6 +654,11 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         });
     }
 
+    /**
+     * Creating dialog alerting user of background noise. This will be called upon unsuccessful classification of image.
+     *
+     * @param activity Which class we want the dialog to show in
+     */
     public void backgroundDialogue(Activity activity) {
         mTextureView.setClickable(false); //cannot click on TextureView (limited to clicking in dialog area)
 
@@ -554,7 +693,9 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         });
     }
 
-    //change to gallery page
+    /**
+     * Creates a intent that will take user to gallery page.
+     */
     private void goToGallery() {
         Intent galleryIntent; //creating a new intent to go to gallery
         galleryIntent = new Intent(Intent.ACTION_PICK,
@@ -562,7 +703,12 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         startActivityForResult(galleryIntent, ACTIVITY_SELECT_PICTURE);
     }
 
-    //creates the gallery icon in the action bar
+    /**
+     * Creates the gallery icon in the action bar.
+     *
+     * @param menu The menu of the current activity
+     * @return a boolean to indicate success
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater;
@@ -571,7 +717,12 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         return true;
     }
 
-    //if allowed to go to gallery (activitySwitchGuard is true), call goToGallery
+    /**
+     * Sets up menu to call goToGallery on click.
+     *
+     * @param item Menu item selected
+     * @return a boolean to indicate success
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -585,7 +736,13 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         }
     }
 
-    //called when returning from different activity
+    /**
+     * Called when returning from different activity.
+     *
+     * @param requestCode The activity code we are returning from
+     * @param resultCode  The indication if we returned successfully from activity
+     * @param data        The data passed from previous activity
+     */
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         Uri selectedURI;
         super.onActivityResult(requestCode, resultCode, data);
@@ -607,6 +764,9 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         }
     }
 
+    /**
+     * Perform any final cleanup before an activity is destroyed.
+     */
     @Override
     protected void onDestroy() {
         super.onDestroy();
