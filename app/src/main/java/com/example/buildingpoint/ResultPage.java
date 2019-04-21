@@ -66,6 +66,7 @@ public class ResultPage extends AppCompatActivity {
     /**
      * First method called in Android lifecycle.  This method initializes our global variables, and prompts a user to grant permissions
      * for camera and location services.
+     *
      * @param savedInstanceState
      */
     @Override
@@ -84,6 +85,7 @@ public class ResultPage extends AppCompatActivity {
 
     /**
      * Sets the image of the activity chosen by user in gallery activity.
+     *
      * @return the image in a bitmap for the getTFModel
      * @throws Exception if the picture is unable to be set
      */
@@ -103,10 +105,11 @@ public class ResultPage extends AppCompatActivity {
 
     /**
      * The method that contains the CNN machine learning model. Sets up the model.  This method creates a list of probabilities
-     *  of different classes.  These method then chooses the dilog to c
+     *  of different classes. These probabilities are passed into chooseDialog, which will decide what dialog to display to the user
+     *  given if the classification was successful or not.
      *
-     * @param bitmap
-     * @throws FirebaseMLException
+     * @param bitmap the photo to be classified
+     * @throws FirebaseMLException if the classifier fails, will throw exception
      */
     public void getTFModel(Bitmap bitmap) throws FirebaseMLException {
         //Getting the TensorFlow Model from assets folder
@@ -173,7 +176,12 @@ public class ResultPage extends AppCompatActivity {
                         });
     }
 
-    //choose which dialog to display depending on returned probabilities from ML model
+    /**
+     * choose which dialog to display depending on returned probabilities from ML model. If probability of most probable building is <0.7,
+     * a background noise dialog will be displayed, else, the dialog of the most probable building is displayed.
+     *
+     * @param probabilities these are the probabilities of classes returned from the CNN machine learning model from getTFModel
+     */
     private void chooseDialog(float[] probabilities) {
         int maxProbBuildingIndex = predictionProb(probabilities); //get index of most probable building
         float maxProb = probabilities[maxProbBuildingIndex]; //get probability of most probable building
@@ -186,7 +194,12 @@ public class ResultPage extends AppCompatActivity {
         }
     }
 
-    //returns index of building with highest probability
+    /**
+     * Returns index of building with highest probability.
+     *
+     * @param probabilities these are the probabilities of classes returned from the CNN machine learning model from getTFModel
+     * @return the index of the building with the highest probability
+     */
     private int predictionProb(float[] probabilities) {
         float max = 0;
         int index = 100;
@@ -200,6 +213,12 @@ public class ResultPage extends AppCompatActivity {
         return index;
     }
 
+    /**
+     * Given string label of building, a query for the particular building's document in FireStore database is initiated,
+     * and all the building's info (name,dept,address,etc.) is passed to a function which will create dialog.
+     *
+     * @param label string label which refers to which building to construct dialog for
+     */
     //given document of building, gets all the building's info (name,dept,address,etc.) and pass info to a function which will create dialog
     public void getInfo(String label) {
         Task<DocumentSnapshot> tds = db.collection("building").document(label).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -220,7 +239,14 @@ public class ResultPage extends AppCompatActivity {
         });
     }
 
-    //creating dialog given information of classified building
+    /**
+     * Creating dialog given information of classified building. This will be called upon successful classification of image.
+     *
+     * @param activity   Which class we want the dialog to show in
+     * @param Name       Name of building to display
+     * @param Department Department name of building to display
+     * @param Address    Address of building to display
+     */
     public void showDialog(Activity activity, String Name, String Department, final String Address) {
         final Dialog dialog = new Dialog(activity); //create a new dialog
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE); //no title
@@ -290,7 +316,11 @@ public class ResultPage extends AppCompatActivity {
         });
     }
 
-
+    /**
+     * Creating dialog alerting user of background noise. This will be called upon unsuccessful classification of image.
+     *
+     * @param activity Which class we want the dialog to show in
+     */
     public void backgroundDialogue(Activity activity) {
         final Dialog dialog2 = new Dialog(activity); //create a new dialog
         dialog2.requestWindowFeature(Window.FEATURE_NO_TITLE); //no title
@@ -330,7 +360,9 @@ public class ResultPage extends AppCompatActivity {
         });
     }
 
-    //change to gallery page
+    /**
+     * Creates a intent that will take user to gallery page.
+     */
     private void goToGallery() {
         Intent galleryIntent;
         galleryIntent = new Intent(Intent.ACTION_PICK,
@@ -338,7 +370,13 @@ public class ResultPage extends AppCompatActivity {
         startActivityForResult(galleryIntent, GOING_TO_GALLERY);
     }
 
-    //called when picture is selected after going back to gallery multiple times (after first time which is handled by onCreate)
+    /**
+     * Called when returning from different activity. Done when picture is selected after going back to gallery multiple times (first time is handled by onCreate).
+     *
+     * @param requestCode The activity code we are returning from
+     * @param resultCode  The indication if we returned successfully from activity
+     * @param data        The data passed from previous activity
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -366,7 +404,9 @@ public class ResultPage extends AppCompatActivity {
         }
     }
 
-    //action to bring activity back home
+    /**
+     * Action to bring activity back home (camera).
+     */
     public void goHome() {
         Intent homeIntent = new Intent();
         homeIntent.setClass(this, MainActivity.class);
