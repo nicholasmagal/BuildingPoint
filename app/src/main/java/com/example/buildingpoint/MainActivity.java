@@ -98,18 +98,18 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         setContentView(R.layout.activity_main);
-        activitySwitchGuard=true;
+        activitySwitchGuard = true;
         cameraInUse = false;
         canTakePhoto = false;
         checkPermission();
-        if (checkFirstTime == true){
+        if (checkFirstTime == true) {
             WelcomeMessage(mTextureView);
             checkFirstTime = false;
         }
 
     }
 
-    private void getLocation(final float [] probabilities) {
+    private void getLocation(final float[] probabilities) {
         try {
             fusedLocationClient.getLastLocation()
                     .addOnSuccessListener(this, new OnSuccessListener<Location>() {
@@ -118,29 +118,28 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                             // Got last known location. In some rare situations this can be null.
 
                             if (location != null) {
-                                getBuildings(probabilities,location);
+                                getBuildings(probabilities, location);
                             }
                         }
                     });
-        }
-        catch (SecurityException e) {
+        } catch (SecurityException e) {
             Log.i("l", "loc");
         }
     }
 
-    private void getBuildings(final float [] probabilities, final Location uLoc) {
+    private void getBuildings(final float[] probabilities, final Location uLoc) {
         Task<QuerySnapshot> qs = db.collection("building").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 QuerySnapshot q = task.getResult();
-                getDistanceToBuildings(q.getDocuments(),probabilities,uLoc);
+                getDistanceToBuildings(q.getDocuments(), probabilities, uLoc);
             }
         });
     }
 
-    private void getDistanceToBuildings(List<DocumentSnapshot> documents, float [] probabilities, Location uLoc) {
-        double [] distances = new double[documents.size()];
-        for(int index = 0; index < documents.size(); index++) {
+    private void getDistanceToBuildings(List<DocumentSnapshot> documents, float[] probabilities, Location uLoc) {
+        double[] distances = new double[documents.size()];
+        for (int index = 0; index < documents.size(); index++) {
             GeoPoint bPoint = documents.get(index).getGeoPoint("location");
 
             Location bLoc = new Location("");
@@ -149,14 +148,14 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
             distances[index] = uLoc.distanceTo(bLoc);
         }
-        getNearestBuilding(probabilities,distances,documents);
+        getNearestBuilding(probabilities, distances, documents);
     }
 
-    private void getNearestBuilding(float [] probabilities, double[] distances, List<DocumentSnapshot> documents) {
+    private void getNearestBuilding(float[] probabilities, double[] distances, List<DocumentSnapshot> documents) {
         double minDistance = distances[0];
         int minIndex = 0;
-        for(int index = 1; index < distances.length; index++) {
-            if(distances[index] < minDistance) {
+        for (int index = 1; index < distances.length; index++) {
+            if (distances[index] < minDistance) {
                 minDistance = distances[index];
                 minIndex = index;
             }
@@ -165,12 +164,10 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         probabilities[minIndex] += 0.2;
         int maxProbBuildingIndex = predictionProb(probabilities);
 
-        if( minDistance > 100.0 || (probabilities[maxProbBuildingIndex] < 0.8) ) {
+        if (minDistance > 100.0 || (probabilities[maxProbBuildingIndex] < 0.8)) {
             backgroundDialogue(this);
             return;
-        }
-
-        else {
+        } else {
             getInfo(documents.get(maxProbBuildingIndex));
         }
 
@@ -208,7 +205,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                 Toast.makeText(this, "Camera permission is needed to show the camera preview.", Toast.LENGTH_SHORT).show();
             }
             */
-            requestPermissions(new String[]{Manifest.permission.CAMERA,Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_IMAGE_CAPTURE);
+            requestPermissions(new String[]{Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_IMAGE_CAPTURE);
 
 
             checkPermission();
@@ -269,7 +266,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
     @Override
     public void onPictureTaken(byte[] data, Camera camera) {
-        activitySwitchGuard=false;
+        activitySwitchGuard = false;
         Bitmap myPhoto;
         myPhoto = BitmapFactory.decodeByteArray(data, 0, data.length);
         //mCamera.startPreview();
@@ -375,15 +372,14 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                             "com.example.buildingpoint.ResultPage");
                     resultIntent.putExtra("theURI", selectedURI.toString());
                     startActivityForResult(resultIntent, ACTIVITY_RESULT);
-                }
-                else {
+                } else {
                     canTakePhoto = true;
                 }
                 break;
             case 3:
                 if (resultCode == Activity.RESULT_OK) {
-                    counter="HELLO";
-                    Log.i("RETURN","HI");
+                    counter = "HELLO";
+                    Log.i("RETURN", "HI");
                 }
 
 
@@ -394,58 +390,28 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     }
 
     public void getTFModel(Bitmap bitmap) throws FirebaseMLException {
-        //checkLocationPermission();
-        Log.i("SUCCESS", "-1");
 
         //Getting the TensorFlowModel from assets folder
-
         FirebaseLocalModel localSource =
                 new FirebaseLocalModel.Builder("my_local_model")  // Assign a name to this model
                         .setAssetFilePath("model.tflite")
                         .build();
         FirebaseModelManager.getInstance().registerLocalModel(localSource);
 
-
-        //Getting the model from FireBase
-        /*
-        FirebaseModelDownloadConditions.Builder conditionsBuilder =
-                new FirebaseModelDownloadConditions.Builder().requireWifi();
-
-        FirebaseModelDownloadConditions conditions = conditionsBuilder.build();
-
-
-        FirebaseRemoteModel cloudSource = new FirebaseRemoteModel.Builder("building-detector")
-                .enableModelUpdates(true)
-                .setInitialDownloadConditions(conditions)
-                .setUpdatesDownloadConditions(conditions)
-                .build();
-        FirebaseModelManager.getInstance().registerRemoteModel(cloudSource);
-        Log.i("SUCCESS", "0");
-        */
-
-
-        //Creating the interperter from the model
-
+        //Creating the interperter for the model
         FirebaseModelOptions options = new FirebaseModelOptions.Builder()
                 .setLocalModelName("my_local_model").build();
         FirebaseModelInterpreter firebaseInterpreter =
                 FirebaseModelInterpreter.getInstance(options);
-        Log.i("SUCCESS", "0.5");
 
-        //Process
-
+        //Specifying the inputs and outputs of model
         FirebaseModelInputOutputOptions inputOutputOptions =
                 new FirebaseModelInputOutputOptions.Builder()
                         .setInputFormat(0, FirebaseModelDataType.FLOAT32, new int[]{1, 224, 224, 3})
                         .setOutputFormat(0, FirebaseModelDataType.FLOAT32, new int[]{1, 4})
                         .build();
 
-
-        Log.i("SUCCESS", "1");
-
-
         //Performing Inference on Input data
-
         bitmap = Bitmap.createScaledBitmap(bitmap, 224, 224, true);
         int batchNum = 0;
         float[][][][] input = new float[1][224][224][3];
@@ -458,39 +424,27 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                 input[batchNum][x][y][2] = Color.blue(pixel) / 255.0f;
             }
         }
-        Log.i("SUCCESS", "2");
-        //Creating a input model
+
+
+        //Creating the input part of model
         FirebaseModelInputs inputs = new FirebaseModelInputs.Builder()
                 .add(input)  // add() as many input arrays as your model requires
                 .build();
 
+        //Running the model
         firebaseInterpreter.run(inputs, inputOutputOptions)
                 .addOnSuccessListener(
                         new OnSuccessListener<FirebaseModelOutputs>() {
                             @Override
                             public void onSuccess(FirebaseModelOutputs result) {
-                                Log.i("SUCCESS", "4");
                                 float[][] output = result.getOutput(0);
                                 float[] probabilities = output[0];
-
+                                //Log message to give us propabilities
                                 for (int i = 0; i < probabilities.length; i++) {
-                                    try {
-                                        BufferedReader reader = new BufferedReader(
-                                                new InputStreamReader(getAssets().open("train.txt")));
-                                        String label = reader.readLine();
-
-
-                                        Log.i("MLKit", String.format("%s: %1.4f", labels[i], probabilities[i]));
-
-
-                                    } catch (Exception e) {
-                                        Log.i("MLKIT", "FAIL");
-                                    }
-
+                                    Log.i("MLKit", String.format("%s: %1.4f", labels[i], probabilities[i]));
                                 }
+                                //This method takes us to where will get our location, which is then used to modify the probability
                                 getLocation(probabilities);
-                                //newLocationRequest(predictionProb(probabilities, labels));
-                                //getInfo(predictionProb(probabilities, labels));
 
                             }
                         })
@@ -501,9 +455,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                                 Log.i("ERROR", " FAILURE AT THE END");
                             }
                         });
-        Log.i("SUCCESS", "3");
-
-
     }
 
     private int predictionProb(float[] probabilities) {
@@ -538,7 +489,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         String Department = bDepartment.toString();
         String Address = bAddress.toString();
 
-        showDialog(MainActivity.this, Name,Department,Address);
+        showDialog(MainActivity.this, Name, Department, Address);
     }
 
     public void WelcomeMessage(View view) {
@@ -571,7 +522,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.home_id:
-                if (activitySwitchGuard==true){
+                if (activitySwitchGuard == true) {
                     goToGallery();
                 }
                 return true;
@@ -582,7 +533,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
 
     public void showDialog(Activity activity, String Name, String Department, final String Address) {
-        Log.i("DialogC","It is done");
+        Log.i("DialogC", "It is done");
         mTextureView.setClickable(false);
         final Dialog dialog = new Dialog(activity);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -631,7 +582,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
         //Showing the dialog
         dialog.show();
-        activitySwitchGuard=true;
+        activitySwitchGuard = true;
 
         //Setting up the button to exit the dilog
         exit.setOnClickListener(new View.OnClickListener() {
@@ -671,7 +622,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
         //Showing the dialog
         dialog2.show();
-        activitySwitchGuard=true;
+        activitySwitchGuard = true;
 
         //Setting up the button to exit the dilog
         exit2.setOnClickListener(new View.OnClickListener() {
