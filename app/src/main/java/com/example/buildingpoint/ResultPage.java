@@ -62,6 +62,12 @@ public class ResultPage extends AppCompatActivity {
     //Building labels
     final String[] labels = {"Arts", "Cox", "McKnight", "Rainbow"};
 
+
+    /**
+     * First method called in Android lifecycle.  This method initializes our global variables, and prompts a user to grant permissions
+     * for camera and location services.
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,7 +82,11 @@ public class ResultPage extends AppCompatActivity {
         }
     }
 
-    //Sets the image of the activity, returns image in a bitmap
+    /**
+     * Sets the image of the activity chosen by user in gallery activity.
+     * @return the image in a bitmap for the getTFModel
+     * @throws Exception if the picture is unable to be set
+     */
     public Bitmap setImage() throws Exception {
         Bitmap pictureMap;
         pictureZone = findViewById(R.id.preview_photo);
@@ -91,6 +101,13 @@ public class ResultPage extends AppCompatActivity {
         return pictureMap;
     }
 
+    /**
+     * The method that contains the CNN machine learning model. Sets up the model.  This method creates a list of probabilities
+     *  of different classes.  These method then chooses the dilog to c
+     *
+     * @param bitmap
+     * @throws FirebaseMLException
+     */
     public void getTFModel(Bitmap bitmap) throws FirebaseMLException {
         //Getting the TensorFlow Model from assets folder
         FirebaseLocalModel localSource =

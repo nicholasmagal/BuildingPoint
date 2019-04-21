@@ -7,7 +7,10 @@ import android.os.Bundle;
 import android.widget.ImageView;
 
 public class Splash extends AppCompatActivity {
-
+    /**
+     * First activity called in Android lifecycle. This activity is called when the app is launched for 3 seconds and then dismissed.
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
