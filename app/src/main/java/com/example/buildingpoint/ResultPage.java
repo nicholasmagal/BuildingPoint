@@ -182,7 +182,7 @@ public class ResultPage extends AppCompatActivity {
      *
      * @param probabilities these are the probabilities of classes returned from the CNN machine learning model from getTFModel
      */
-    private void chooseDialog(float[] probabilities) {
+    public void chooseDialog(float[] probabilities) {
         int maxProbBuildingIndex = predictionProb(probabilities); //get index of most probable building
         float maxProb = probabilities[maxProbBuildingIndex]; //get probability of most probable building
 
@@ -200,7 +200,7 @@ public class ResultPage extends AppCompatActivity {
      * @param probabilities these are the probabilities of classes returned from the CNN machine learning model from getTFModel
      * @return the index of the building with the highest probability
      */
-    private int predictionProb(float[] probabilities) {
+    public int predictionProb(float[] probabilities) {
         float max = 0;
         int index = 100;
         int length = probabilities.length;
@@ -363,7 +363,7 @@ public class ResultPage extends AppCompatActivity {
     /**
      * Creates a intent that will take user to gallery page.
      */
-    private void goToGallery() {
+    public void goToGallery() {
         Intent galleryIntent;
         galleryIntent = new Intent(Intent.ACTION_PICK,
                 android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI);

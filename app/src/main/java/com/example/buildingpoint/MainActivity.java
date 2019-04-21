@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
         //if this is user's first time opening app, display welcome message
         if (checkFirstTime == true) {
-            WelcomeMessage(mTextureView);
+            welcomeMessage(mTextureView);
             checkFirstTime = false;
         }
     }
@@ -130,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
      *
      * @param view The view where this will be displayed
      */
-    public void WelcomeMessage(View view) {
+    public void welcomeMessage(View view) {
         String welcomemessage = "Please click on the screen to identify a building and see its information \n";
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setTitle("Welcome to BuildingPoint!");
@@ -150,7 +150,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     /**
      * Asks for user permission regarding camera usage and location services.
      */
-    private void checkPermission() {
+    public void checkPermission() {
         if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED &&
                 ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             canTakePhoto = true; //if user already has camera & location permission, set canTakePhoto to true and exit function (continue app execution)
@@ -199,7 +199,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
      * This method opens up the camera. This method opens up a camera and sets the orientation by calling setCameraDisplayOrientation
      * which makes our camera upright.
      */
-    private void openCamera() {
+    public void openCamera() {
         int cameraID = getId(); //first need to get cameraID
 
         //if cannot open camera, let user know camera is not available and return
@@ -338,7 +338,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     /**
      * Stops the camera from previewing and releases the camera.  Updates boolean value of cameraInUse.
      */
-    private void closeCamera() {
+    public void closeCamera() {
         mCamera.stopPreview(); //stop preview (dont need to see anymore)
         mCamera.release(); //release the camera
         cameraInUse = false; //camera is no longer in use
@@ -347,7 +347,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     /**
      * Destroys the TextureView.
      */
-    private void releasePreview() {
+    public void releasePreview() {
         if (mTextureView != null) { //while there is a TextureView to destroy ...
             mTextureView.destroyDrawingCache(); //destroy it
         }
@@ -452,7 +452,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
      *
      * @param probabilities these are the probabilities of classes returned from the CNN machine learning model from getTFModel
      */
-    private void getLocation(final float[] probabilities) {
+    public void getLocation(final float[] probabilities) {
         try {
             fusedLocationClient.getLastLocation() //attempt to get the location of the user
                     .addOnSuccessListener(this, new OnSuccessListener<Location>() {
@@ -478,7 +478,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
      * @param probabilities these are the probabilities of classes returned from the CNN machine learning model from getTFModel
      * @param uLoc User location captured from getLocation Method.
      */
-    private void getBuildings(final float[] probabilities, final Location uLoc) {
+    public void getBuildings(final float[] probabilities, final Location uLoc) {
         Task<QuerySnapshot> qs = db.collection("building").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             //query database for the collection holding all the building documents(the collection holds each document, and each document holds the info of a particular building)
             @Override
@@ -497,7 +497,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
      * @param probabilities These are the probabilities of classes returned from the CNN machine learning model from getTFModel
      * @param uLoc          User location captured from getLocation Method.
      */
-    private void getDistanceToBuildings(List<DocumentSnapshot> documents, float[] probabilities, Location uLoc) {
+    public void getDistanceToBuildings(List<DocumentSnapshot> documents, float[] probabilities, Location uLoc) {
         double[] distances = new double[documents.size()]; //create an array which will store the distance between the user and each building
         for (int index = 0; index < documents.size(); index++) { //for each building ...
             GeoPoint bPoint = documents.get(index).getGeoPoint("location"); //get the building's location from the database, stored in a GeoPoint
@@ -519,7 +519,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
      * @param distances     List of distances between the user and each building stored in FireStore
      * @param documents     A list of document snapshots, each document refers to a particular building in the FireStore database
      */
-    private void getNearestBuilding(float[] probabilities, double[] distances, List<DocumentSnapshot> documents) {
+    public void getNearestBuilding(float[] probabilities, double[] distances, List<DocumentSnapshot> documents) {
         //will attempt to find closest building ...
         double minDistance = distances[0]; //closest building in terms of distance
         int minIndex = 0; //closest building in terms of index
@@ -548,7 +548,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
      * @param probabilities These are the probabilities of classes returned from the CNN machine learning model from getTFModel
      * @return the index of the building with the highest probability
      */
-    private int predictionProb(float[] probabilities) {
+    public int predictionProb(float[] probabilities) {
         float max = 0;
         int index = 100;
         int length = probabilities.length;
@@ -696,7 +696,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     /**
      * Creates a intent that will take user to gallery page.
      */
-    private void goToGallery() {
+    public void goToGallery() {
         Intent galleryIntent; //creating a new intent to go to gallery
         galleryIntent = new Intent(Intent.ACTION_PICK,
                 android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI);
