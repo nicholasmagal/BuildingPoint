@@ -520,6 +520,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
      * @param documents     A list of document snapshots, each document refers to a particular building in the FireStore database
      */
     public void getNearestBuilding(float[] probabilities, double[] distances, List<DocumentSnapshot> documents) {
+        /*
         //will attempt to find closest building ...
         double minDistance = distances[0]; //closest building in terms of distance
         int minIndex = 0; //closest building in terms of index
@@ -530,11 +531,13 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             }
         } //for loop will iterate over each building's distance and update the variables holding the distance to nearest building & index of nearest building
 
+
         probabilities[minIndex] += 0.2; //increase the probability(confidence) of nearest building by 0.2
+        */
         int maxProbBuildingIndex = predictionProb(probabilities); //get the index of the building with the highest probability
 
-        if (minDistance > 100.0 || (probabilities[maxProbBuildingIndex] < 0.8)) {
-            //if the closest building is farther than 100 meters OR if the probability of the most probable building is less than 80% ...
+        if (distances[maxProbBuildingIndex] > 200.0 || (probabilities[maxProbBuildingIndex] < 0.5)) {
+            //if the most probable building is farther than 100 meters OR if the probability of the most probable building is less than 80% ...
             backgroundDialogue(this); //bring up "background noise" dialog
             return; //return from function
         } else {

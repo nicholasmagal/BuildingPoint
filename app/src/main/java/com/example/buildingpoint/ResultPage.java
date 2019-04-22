@@ -186,7 +186,7 @@ public class ResultPage extends AppCompatActivity {
         int maxProbBuildingIndex = predictionProb(probabilities); //get index of most probable building
         float maxProb = probabilities[maxProbBuildingIndex]; //get probability of most probable building
 
-        if (maxProb < 0.7) { //if probability(confidence) is less than 0.7, show background noise dialog and return from execution
+        if (maxProb < 0.5) { //if probability(confidence) is less than 0.8, show background noise dialog and return from execution
             backgroundDialogue(this);
             return;
         } else { //else, show dialog of most probable building
