@@ -250,6 +250,7 @@ public class ResultPage extends AppCompatActivity {
     public void showDialog(Activity activity, String Name, String Department, final String Address) {
         final Dialog dialog = new Dialog(activity); //create a new dialog
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE); //no title
+        dialog.setCancelable(false); //cant exit dialog without clicking exit
         dialog.setContentView(R.layout.layout_dialog2); //set the layout of the dialog (grabbing from xml)
 
         //Setting the TextView up
@@ -324,6 +325,7 @@ public class ResultPage extends AppCompatActivity {
     public void backgroundDialogue(Activity activity) {
         final Dialog dialog2 = new Dialog(activity); //create a new dialog
         dialog2.requestWindowFeature(Window.FEATURE_NO_TITLE); //no title
+        dialog2.setCancelable(false); //cant exit dialog without clicking exit
         dialog2.setContentView(R.layout.background_dialogue2); //set the layout of the dialog (grabbing from xml)
 
         Button exit2 = dialog2.findViewById(R.id.exit_button2); //grabbing exit element from xml
