@@ -536,11 +536,12 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         */
         int maxProbBuildingIndex = predictionProb(probabilities); //get the index of the building with the highest probability
 
-        if (distances[maxProbBuildingIndex] > 200.0 || (probabilities[maxProbBuildingIndex] < 0.5)) {
+        if (distances[maxProbBuildingIndex] > 150.0 || (probabilities[maxProbBuildingIndex] < 0.7)) {
             //if the most probable building is farther than 100 meters OR if the probability of the most probable building is less than 80% ...
             backgroundDialogue(this); //bring up "background noise" dialog
             return; //return from function
-        } else {
+        }
+        else {
             getInfo(documents.get(maxProbBuildingIndex)); //else, bring up dialog of most probable building
         }
     }
