@@ -508,36 +508,22 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
             distances[index] = uLoc.distanceTo(bLoc); //store in the distance array, the distance in meters between the user and the particular building
         }
-        getNearestBuilding(probabilities, distances, documents); //pass to the next function, the probabilities from the ML model, distances between the user and each building, and list of documents for each building
+        chooseDialog(probabilities, distances, documents); //pass to the next function, the probabilities from the ML model, distances between the user and each building, and list of documents for each building
     }
 
     /**
-     * The last method in the classification chain. Finds the nearest building to User.  Enhances the probability by adding .2 to nearest building's probability. Chooses the max probability. If this probability
-     * is below .8 or if nearest building is more then 100 meters away, show background noise dialog, else display dialog of most probable building.
+     * The last method in the classification chain. Finds most probable building returned from ML model, and if most probable building is farther than 150m away OR if probability associated
+     * with most probable building is <0.7, show background noise dialog. Else, display dialog of most probable building.
      *
      * @param probabilities These are the probabilities of classes returned from the CNN machine learning model from getTFModel
      * @param distances     List of distances between the user and each building stored in FireStore
      * @param documents     A list of document snapshots, each document refers to a particular building in the FireStore database
      */
-    public void getNearestBuilding(float[] probabilities, double[] distances, List<DocumentSnapshot> documents) {
-        /*
-        //will attempt to find closest building ...
-        double minDistance = distances[0]; //closest building in terms of distance
-        int minIndex = 0; //closest building in terms of index
-        for (int index = 1; index < distances.length; index++) {
-            if (distances[index] < minDistance) {
-                minDistance = distances[index];
-                minIndex = index;
-            }
-        } //for loop will iterate over each building's distance and update the variables holding the distance to nearest building & index of nearest building
-
-
-        probabilities[minIndex] += 0.2; //increase the probability(confidence) of nearest building by 0.2
-        */
+    public void chooseDialog(float[] probabilities, double[] distances, List<DocumentSnapshot> documents) {
         int maxProbBuildingIndex = predictionProb(probabilities); //get the index of the building with the highest probability
 
         if (distances[maxProbBuildingIndex] > 150.0 || (probabilities[maxProbBuildingIndex] < 0.7)) {
-            //if the most probable building is farther than 100 meters OR if the probability of the most probable building is less than 80% ...
+            //if the most probable building is farther than 150 meters OR if the probability of the most probable building is less than 70% ...
             backgroundDialogue(this); //bring up "background noise" dialog
             return; //return from function
         }
